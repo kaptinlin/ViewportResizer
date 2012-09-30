@@ -1,0 +1,95 @@
+header {
+	width:100%;
+	top: 0;
+	left: 0;
+	background: #000;
+	height:60px;
+	position:fixed;
+	z-index: 99999;
+	-webkit-user-select: none;
+  	-moz-user-select: none;
+  	-ms-user-select: none;
+  	-o-user-select: none;
+  	user-select: none;   
+}
+html {
+	margin-top: 60px;
+	overflow: hidden;
+	height: -moz-calc(100% - 60px);
+	height: -webkit-calc(100% - 60px);
+	height: calc(100% - 60px);
+	_height: 100%;
+}
+body {
+	height: 100%;
+}
+article {
+	height: 100%;
+	overflow:auto;
+}
+/* necessary */
+ul.resizer-switcher {
+	margin:0;
+	padding:0;
+}
+ul.resizer-switcher li {
+	margin:0;
+	padding:0;
+}
+.resizer-iframe {
+	width:100%;
+	min-height: 600px;
+	height: 100%;
+	margin: 0 auto;
+	padding: 0;
+	display: block;
+	border: none;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+/* styled */
+.resizer-iframe {
+	-moz-transition: width .5s linear;
+    -webkit-transition: width .5s linear;
+    -o-transition: width .5s linear;
+    transition: width .5s linear;
+}
+ul.resizer-switcher {
+	float: right;
+}
+.resizer-switcher li {
+	background-repeat: no-repeat;
+	background-position: center bottom;
+	display: inline-block;
+	height: 56px;
+	text-indent: 9999px;
+	cursor: pointer;
+}
+.resizer-switcher [data-size="mobile"] {
+	width: 30px;
+	background-image: url(../img/mobile.png);
+}
+.resizer-switcher [data-size="mobile"]:hover, .resizer-switcher [data-size="mobile"][data-current="true"] {
+	background-image: url(../img/mobile_active.png);
+}
+.resizer-switcher [data-size="tablet"] {
+	width: 38px;
+	background-image: url(../img/tablet.png);
+}
+.resizer-switcher [data-size="tablet"]:hover, .resizer-switcher [data-size="tablet"][data-current="true"] {
+	background-image: url(../img/tablet_active.png);
+}
+.resizer-switcher [data-size="notebook"] {
+	width: 61px;
+	background-image: url(../img/notebook.png);
+}
+.resizer-switcher [data-size="notebook"]:hover, .resizer-switcher [data-size="notebook"][data-current="true"] {
+	background-image: url(../img/notebook_active.png);
+}
+.resizer-switcher [data-size="desktop"] {
+	width: 66px;
+	background-image: url(../img/desktop.png);
+}
+.resizer-switcher [data-size="desktop"]:hover, .resizer-switcher [data-size="desktop"][data-current="true"] {
+	background-image: url(../img/desktop_active.png);
+}
