@@ -26,7 +26,14 @@ body {
 article {
 	height: 100%;
 }
+.resizer-viewport {
+	position: relative;
+	margin: 0 auto;
+}
 /* necessary */
+.resizer-viewport {
+	height:100%;
+}
 ul.resizer-switcher {
 	margin:0;
 	padding:0;
@@ -39,14 +46,31 @@ ul.resizer-switcher li {
 	width:100%;
 	min-height: 600px;
 	height: 100%;
-	margin: 0 auto;
 	padding: 0;
 	display: block;
 	border: none;
 	overflow-x: hidden;
 	overflow-y: scroll;
+	z-index: 9999;
+}
+.resizer-resizer {
+	position: absolute;
+	height: 100%;
+	top: 0;
+	cursor: e-resize;
+	z-index: 10000;
 }
 /* styled */
+.resizer-resizer {
+	width: 5px;
+	right: -5px;
+	background-color: #eef6ff;	
+}
+.resizer-resizer:hover {
+	width: 8px;
+	right: -8px;
+	background-color:#ddedff;
+}
 .resizer-iframe {
 	-moz-transition: width .5s linear;
     -webkit-transition: width .5s linear;

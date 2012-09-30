@@ -4,36 +4,33 @@
   // Constructor
   var self = $.ViewportResizer = function (options) {
     $.extend(self.settings, options);
-    var swithcer, iframe, uri;
+    var switcher, iframe, uri, resizer;
 
     var scrollbarWidth = getScrollbarWidth();
     // Classes
     var switcherClass = self.settings.classNamePrefix + '-switcher',
-        iframeClass = self.settings.classNamePrefix + '-iframe';
+        viewportClass = self.settings.classNamePrefix + '-viewport',
+        iframeClass = self.settings.classNamePrefix + '-iframe',
+        resizerClass = self.settings.classNamePrefix + '-resizer';
 
     self.query = {};
 
     // Private Methods
 
-
     function init() {
-      swithcer.build();
+      switcher.build();
       iframe.build();
+      resizer.build();
 
-      self.$sizes.click(function () {
-        switchTo($(this).data('size'));
-      });
+      switcher.bind();
+      resizer.bind();
 
+      uri.init(self.settings.target);
 
-      if (self.settings.target !== undefined) {
-        uri.init(self.settings.target);
-      } else {
-        uri.init();
-      }
     }
 
     function switchTo(size, push) {
-      swithcer.to(size);
+      switcher.to(size);
       iframe.to(size);
       if (push !== false) {
         $.extend(self.query, {
@@ -60,7 +57,6 @@
     }
 
     // thank to http://chris-spittles.co.uk/?p=531
-
 
     function getScrollbarWidth() {
       var $inner = jQuery('<div style="width: 100%; height:200px;">test</div>'),
@@ -121,7 +117,7 @@
       }
     };
 
-    swithcer = {
+    switcher = {
       build: function () {
         self.$switcher = $('<ul/>').addClass(switcherClass);
         var sizeMarkup = [];
@@ -135,12 +131,18 @@
       to: function (size) {
         self.$sizes.filter('[data-current="true"]').attr('data-current', null);
         self.$sizes.filter('[data-size="' + size + '"]').attr('data-current', 'true');
+      },
+      bind: function () {
+        self.$sizes.click(function () {
+          switchTo($(this).data('size'));
+        });
       }
     };
 
     iframe = {
       build: function () {
-        self.$iframe = $('<iframe />').addClass(iframeClass).appendTo(self.settings.container.iframe);
+        self.$viewport = $('<div />').addClass(viewportClass).appendTo(self.settings.container.viewport);
+        self.$iframe = $('<iframe />').addClass(iframeClass).appendTo(self.$viewport);
       },
       load: function (src) {
         if (-1 === src.search(/http(s){0,1}:\/\//)) {
@@ -152,8 +154,27 @@
         var dimensions = getSizeDimensions(size);
         var iframeWidth = dimensions.width + scrollbarWidth;
 
-        self.$iframe.attr('width', iframeWidth).css({
+        self.$viewport.css({
           width: iframeWidth
+        });
+/*self.$iframe.attr('width', iframeWidth).css({
+          width: iframeWidth
+        });*/
+
+      }
+    };
+
+    resizer = {
+      build: function () {
+        self.$resizer = $('<div />').addClass(resizerClass).appendTo(self.$viewport);
+      },
+      bind: function () {
+        self.$viewport.drag("start", function (ev, dd) {
+          dd.width = this.clientWidth;
+        }).drag(function (ev, dd) {
+          this.style.width = Math.max(self.settings.resize.minWidth, dd.width + dd.deltaX * 2) + 'px';
+        }, {
+          handle: '.' + resizerClass
         });
       }
     };
@@ -166,7 +187,7 @@
     classNamePrefix: 'resizer',
     container: {
       switcher: 'header',
-      iframe: 'article'
+      viewport: 'article'
     },
     sizes: {
       mobile: {
@@ -189,6 +210,9 @@
         height: 800,
         description: 'Desktop'
       }
+    },
+    resize: {
+      minWidth: 240
     }
   };
 
