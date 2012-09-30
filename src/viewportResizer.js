@@ -14,6 +14,8 @@
     self.query = {};
 
     // Private Methods
+
+
     function init() {
       swithcer.build();
       iframe.build();
@@ -58,6 +60,8 @@
     }
 
     // thank to http://chris-spittles.co.uk/?p=531
+
+
     function getScrollbarWidth() {
       var $inner = jQuery('<div style="width: 100%; height:200px;">test</div>'),
           $outer = jQuery('<div style="width:200px; height:150px; position: absolute; top: 0; left: 0; visibility: hidden; overflow:hidden;"></div>').append($inner),
