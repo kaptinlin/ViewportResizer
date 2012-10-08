@@ -22,17 +22,27 @@ html {
 }
 body {
 	height: 100%;
+	overflow: auto;
 }
 article {
 	height: 100%;
 }
 .resizer-viewport {
 	position: relative;
+	
+}
+.resizer-width-area {
+	position: relative;
 	margin: 0 auto;
 }
 /* necessary */
 .resizer-viewport {
 	height:100%;
+}
+.resizer-width-area {
+	height:auto !important; 
+	height:100%; 
+	min-height:100%;
 }
 ul.resizer-switcher {
 	margin:0;
@@ -44,7 +54,6 @@ ul.resizer-switcher li {
 }
 .resizer-iframe {
 	width:100%;
-	min-height: 600px;
 	height: 100%;
 	padding: 0;
 	display: block;
@@ -53,29 +62,49 @@ ul.resizer-switcher li {
 	overflow-y: scroll;
 	z-index: 9999;
 }
-.resizer-resizer {
+.resizer-width-resizer {
 	position: absolute;
 	height: 100%;
 	top: 0;
-	cursor: e-resize;
+	cursor: ew-resize;
 	z-index: 10000;
 }
+.resizer-height-resizer {
+	position: absolute;
+	width: 100%;
+	cursor: ns-resize;
+	z-index: 10000;
+}
+.resizer-overlay {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	display:none;
+}
 /* styled */
-.resizer-resizer {
+.resizer-width-resizer {
 	width: 5px;
 	right: -5px;
 	background-color: #eef6ff;	
 }
-.resizer-resizer:hover {
+.resizer-width-resizer:hover {
 	width: 8px;
 	right: -8px;
-	background-color:#ddedff;
+	background-color:#d0e0ff;
 }
-.resizer-iframe {
-	-moz-transition: width .5s linear;
-    -webkit-transition: width .5s linear;
-    -o-transition: width .5s linear;
-    transition: width .5s linear;
+.resizer-height-resizer {
+	height: 5px;
+	background-color: #eef6ff;
+}
+.resizer-height-resizer:hover {
+	height: 8px;
+	background-color:#d0e0ff;
+}
+.resizer-viewport:not([data-onResizing="true"]) * {
+	-moz-transition: all .5s linear;
+    -webkit-transition: all .5s linear;
+    -o-transition: all .5s linear;
+    transition: all .5s linear;
 }
 ul.resizer-switcher {
 	float: right;

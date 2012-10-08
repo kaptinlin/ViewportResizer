@@ -10,8 +10,13 @@
     // Classes
     var switcherClass = self.settings.classNamePrefix + '-switcher',
         viewportClass = self.settings.classNamePrefix + '-viewport',
+        widthAreaClass = self.settings.classNamePrefix + '-width-area',
+        heightAreaClass = self.settings.classNamePrefix + '-height-area',
         iframeClass = self.settings.classNamePrefix + '-iframe',
-        resizerClass = self.settings.classNamePrefix + '-resizer';
+        widthResizerClass = self.settings.classNamePrefix + '-width-resizer',
+        heightResizerClass = self.settings.classNamePrefix + '-height-resizer',
+        overlayClass = self.settings.classNamePrefix + '-overlay',
+        heightOverlayClass = self.settings.classNamePrefix + '-height-overlay';
 
     self.query = {};
 
@@ -142,7 +147,8 @@
     iframe = {
       build: function () {
         self.$viewport = $('<div />').addClass(viewportClass).appendTo(self.settings.container.viewport);
-        self.$iframe = $('<iframe />').addClass(iframeClass).appendTo(self.$viewport);
+        self.$widthArea = $('<div />').addClass(widthAreaClass).appendTo(self.$viewport);
+        self.$iframe = $('<iframe />').addClass(iframeClass).appendTo(self.$widthArea);
       },
       load: function (src) {
         if (-1 === src.search(/http(s){0,1}:\/\//)) {
@@ -154,27 +160,52 @@
         var dimensions = getSizeDimensions(size);
         var iframeWidth = dimensions.width + scrollbarWidth;
 
-        self.$viewport.css({
+        self.$widthArea.css({
           width: iframeWidth
         });
-/*self.$iframe.attr('width', iframeWidth).css({
-          width: iframeWidth
-        });*/
-
+        self.$iframe.css({
+          height: dimensions.height
+        });
+        self.$heightResizer.css({
+          top: dimensions.height
+        });
       }
     };
 
     resizer = {
       build: function () {
-        self.$resizer = $('<div />').addClass(resizerClass).appendTo(self.$viewport);
+        self.$widthResizer = $('<div />').addClass(widthResizerClass).prependTo(self.$widthArea);
+        self.$overlay = $('<div />').addClass(overlayClass).prependTo(self.$widthArea);
+        self.$heightResizer = $('<div />').addClass(heightResizerClass).appendTo(self.$viewport);
       },
       bind: function () {
-        self.$viewport.drag("start", function (ev, dd) {
+        //width resizer
+        self.$widthArea.drag("start", function (ev, dd) {
+          self.$overlay.show();
           dd.width = this.clientWidth;
+          self.$viewport.attr('data-onResizing', 'true');
         }).drag(function (ev, dd) {
           this.style.width = Math.max(self.settings.resize.minWidth, dd.width + dd.deltaX * 2) + 'px';
         }, {
-          handle: '.' + resizerClass
+          handle: '.' + widthResizerClass
+        }).drag("dragend", function (ev, dd) {
+          self.$overlay.hide();
+          self.$viewport.attr('data-onResizing', null);
+        });
+
+        //height resizer
+        self.$viewport.drag("start", function (ev, dd) {
+          self.$overlay.show();
+          dd.height = self.$iframe[0].clientHeight;
+          self.$viewport.attr('data-onResizing', 'true');
+        }).drag(function (ev, dd) {
+          self.$iframe[0].style.height = Math.max(self.settings.resize.minHeight, dd.height + dd.deltaY) + 'px';
+          self.$heightResizer[0].style.top = self.$iframe[0].style.height;
+        }, {
+          handle: '.' + heightResizerClass
+        }).drag("dragend", function (ev, dd) {
+          self.$overlay.hide();
+          self.$viewport.attr('data-onResizing', null);
         });
       }
     };
@@ -212,7 +243,8 @@
       }
     },
     resize: {
-      minWidth: 240
+      minWidth: 240,
+      minHeight: 320
     }
   };
 
