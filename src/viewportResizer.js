@@ -11,16 +11,15 @@
     var switcherClass = self.settings.classNamePrefix + '-switcher',
         viewportClass = self.settings.classNamePrefix + '-viewport',
         widthAreaClass = self.settings.classNamePrefix + '-width-area',
-        heightAreaClass = self.settings.classNamePrefix + '-height-area',
         iframeClass = self.settings.classNamePrefix + '-iframe',
         widthResizerClass = self.settings.classNamePrefix + '-width-resizer',
         heightResizerClass = self.settings.classNamePrefix + '-height-resizer',
-        overlayClass = self.settings.classNamePrefix + '-overlay',
-        heightOverlayClass = self.settings.classNamePrefix + '-height-overlay';
+        overlayClass = self.settings.classNamePrefix + '-overlay';
 
     self.query = {};
 
     // Private Methods
+
 
     function init() {
       switcher.build();
@@ -62,6 +61,7 @@
     }
 
     // thank to http://chris-spittles.co.uk/?p=531
+
 
     function getScrollbarWidth() {
       var $inner = jQuery('<div style="width: 100%; height:200px;">test</div>'),
