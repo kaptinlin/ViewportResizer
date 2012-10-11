@@ -136,11 +136,20 @@
         self.$switcher = $('<ul/>').addClass(switcherClass);
         var sizeMarkup = [];
         $.each(self.settings.viewports, function (slug, viewport) {
-          sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
+          if(slug == 'optional'){
+            sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'>"+
+                "<a href='#'>" + viewport.description + "</a>"+
+                "<div class='"+switcherClass+"-optional-detail'><ul>"+
+                  "<li><label for='optional_width'>Width:</label><input type='text' id='optional_width' value='' /></li>"+
+                  "<li><label for='optional_height'>Height:</label><input type='text' id='optional_height' value='' /></li>"+
+                "</ul></div>"+
+              "</li>";
+          }else{
+            sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
+          }
         });
         self.$switcher.append(sizeMarkup).appendTo(self.settings.container.switcher);
-
-        self.$switcherItem = self.$switcher.find('li');
+        
       },
       to: function (viewport) {
         self.current.viewport = viewport;
@@ -149,15 +158,26 @@
         self.current.width = dimensions.width;
         self.current.height = dimensions.height;
 
-        self.$switcherItem.filter('[data-current="true"]').attr('data-current', null);
-        self.$switcherItem.filter('[data-viewport="' + viewport + '"]').attr('data-current', 'true');
+        self.$switcher.children('[data-current="true"]').attr('data-current', null);
+        self.$switcher.children('[data-viewport="' + viewport + '"]').attr('data-current', 'true');
         self.$viewport.trigger('resize', self.current);
       },
       bind: function () {
-        self.$switcherItem.click(function () {
-          var viewport = $(this).data('viewport');
+        self.$switcher.delegate('a','click',function (e) {
+          var viewport = $(this).parent().data('viewport');
+          if(viewport === 'optional'){
+            switcher.showOptional();
+          }
           switcher.to(viewport);
+          e.preventDefault();
         });
+      },
+      showOptional: function(){
+        var $optional = self.$switcher.children('[data-viewport="optional"]');
+
+        $optional.attr('data-show','true');
+        $optional.find('#optional_width').val(self.current.width);
+        $optional.find('#optional_height').val(self.current.height);
       }
     };
 
