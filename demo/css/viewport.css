@@ -14,11 +14,11 @@ header {
 	height:60px;
 	position:fixed;
 	z-index: 99999;
-	-webkit-user-select: none;
+	/*-webkit-user-select: none;
   	-moz-user-select: none;
   	-ms-user-select: none;
   	-o-user-select: none;
-  	user-select: none;   
+  	user-select: none;  */ 
 }
 html {
 	margin-top: 60px;
@@ -196,6 +196,9 @@ ul.resizer-switcher li {
 	overflow-y: scroll;
 	z-index: 9999;
 }
+[data-viewport="auto"] > div {
+	display:none;
+}
 /* styled */
 .resizer-info {
 	font-size: 12px;
@@ -335,7 +338,7 @@ ul.resizer-switcher {
 	box-shadow: 0 0 0 2px rgba(255,255,255,.3), inset 0 2px 2px rgba(0,0,0,.03);
 	border: 1px solid rgba(0,0,0,.15);
 }
-.resizer-switcher-optional-detail input:focus {
+.resizer-switcher-optional-detail input:focus,.resizer-switcher-optional-detail input:hover {
 	-webkit-box-shadow: 0 1px 8px rgba(111,188,243,.3);
 	-moz-box-shadow: 0 1px 8px rgba(111,188,243,.3);
 	box-shadow: 0 1px 8px rgba(111,188,243,.3);
