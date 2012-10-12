@@ -30,5 +30,5 @@ _(Coming soon)_
 _(Nothing yet)_
 
 ## License
-Copyright (c) 2012 KaptinLin  
-Licensed under the GPL license.
+Copyright (c) 2012 KaptinLin
+Licensed under the CC BY-NC 3.0 license.
