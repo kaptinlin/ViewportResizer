@@ -5,19 +5,19 @@
     return (typeof num == 'string' || typeof num == 'number') && !isNaN(num - 0) && num !== '';
   };
 
-  function divideByTwo(num){
-    if(isNumber(num)){
-      return num/2;
+  function divideByTwo(num) {
+    if (isNumber(num)) {
+      return num / 2;
     }
-    if(typeof num == 'string' && num.charAt(num.length-1) == '%'){
-      return num.substr(0,num.length-1)/2+'%';
+    if (typeof num == 'string' && num.charAt(num.length - 1) == '%') {
+      return num.substr(0, num.length - 1) / 2 + '%';
     }
   };
 
   // Constructor
   var self = $.ViewportResizer = function (options) {
     $.extend(self.settings, options);
-    var switcher, iframe, uri, resizable, axis, info;
+    var switcher, iframe, uri, resizable, axis, info, target;
 
     var scrollbarWidth = getScrollbarWidth();
     // Classes
@@ -26,18 +26,19 @@
         iframeClass = self.settings.classNamePrefix + '-iframe',
         resizableClass = self.settings.classNamePrefix + '-resizable',
         axisClass = self.settings.classNamePrefix + '-axis',
-        infoClass = self.settings.classNamePrefix + '-info';
+        infoClass = self.settings.classNamePrefix + '-info',
+        targetClass = self.settings.classNamePrefix + '-target';
 
     self.query = {};
 
     // Private Methods
-
 
     function init() {
       self.$viewport = $('<div />').addClass(viewportClass).appendTo(self.settings.container.viewport);
       self.current = {};
 
       //build doms
+      target.build();
       switcher.build();
       iframe.build();
       resizable.build();
@@ -45,6 +46,7 @@
       info.build();
 
       //bind events
+      target.bind();
       switcher.bind();
       iframe.bind();
       resizable.bind();
@@ -76,7 +78,7 @@
     };
 
     function getViewportDimensions(viewport) {
-      if(viewport == 'auto'){
+      if (viewport == 'auto') {
         return {
           width: '100%',
           height: '100%'
@@ -89,7 +91,6 @@
     }
 
     // thank to http://chris-spittles.co.uk/?p=531
-
 
     function getScrollbarWidth() {
       var $inner = jQuery('<div style="width: 100%; height:200px;">test</div>'),
@@ -149,28 +150,30 @@
         return query;
       }
     };
+    target = {
+      build: function () {
 
+      },
+      bind: function () {
+
+      }
+
+    };
     switcher = {
       build: function () {
         self.$switcher = $('<ul/>').addClass(switcherClass);
         var sizeMarkup = [];
         $.each(self.settings.viewports, function (slug, viewport) {
-          if(slug == 'optional'){
-            sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'>"+
-                "<a href='#'>" + viewport.description + "</a>"+
-                "<div class='"+switcherClass+"-optional-detail'><ul>"+
-                  "<li><label for='optional_width'>Width:</label><input type='number' id='optional_width' min='"+self.settings.min.width+"' value='' /></li>"+
-                  "<li><label for='optional_height'>Height:</label><input type='number' id='optional_height' min='"+self.settings.min.height+"' value='' /></li>"+
-                "</ul></div>"+
-              "</li>";
-          }else{
+          if (slug == 'optional') {
+            sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'>" + "<a href='#'>" + viewport.description + "</a>" + "<div class='" + switcherClass + "-optional-detail'><ul>" + "<li><label for='optional_width'>Width:</label><input type='number' id='optional_width' min='" + self.settings.min.width + "' value='' /></li>" + "<li><label for='optional_height'>Height:</label><input type='number' id='optional_height' min='" + self.settings.min.height + "' value='' /></li>" + "</ul></div>" + "</li>";
+          } else {
             sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
           }
         });
 
         self.$switcher.append(sizeMarkup).appendTo(self.settings.container.switcher);
         self.$optional = self.$switcher.children('[data-viewport="optional"]');
-        
+
         switcher.$optional_width = self.$optional.find('#optional_width');
         switcher.$optional_height = self.$optional.find('#optional_height');
       },
@@ -186,29 +189,29 @@
         self.$viewport.trigger('resize', self.current);
       },
       bind: function () {
-        self.$switcher.delegate('a','click',function (e) {
+        self.$switcher.delegate('a', 'click', function (e) {
           var viewport = $(this).parent().data('viewport');
-          if(viewport === 'optional'){
+          if (viewport === 'optional') {
             switcher.showOptional();
           }
           switcher.to(viewport);
           e.preventDefault();
         });
-        
-        switcher.$optional_width.on('change',function(){
-          if(isNumber(this.value)){
-            if(this.value<self.settings.min.width){
-              this.value= self.settings.min.width;
+
+        switcher.$optional_width.on('change', function () {
+          if (isNumber(this.value)) {
+            if (this.value < self.settings.min.width) {
+              this.value = self.settings.min.width;
             }
             self.$viewport.trigger('resize', {
               width: this.value
             });
           }
         });
-        switcher.$optional_height.on('change',function(){
-          if(isNumber(this.value)){
-            if(this.value<self.settings.min.height){
-              this.value= self.settings.min.height;
+        switcher.$optional_height.on('change', function () {
+          if (isNumber(this.value)) {
+            if (this.value < self.settings.min.height) {
+              this.value = self.settings.min.height;
             }
 
             self.$viewport.trigger('resize', {
@@ -217,8 +220,8 @@
           }
         });
       },
-      showOptional: function(){
-        self.$optional.attr('data-show','true');
+      showOptional: function () {
+        self.$optional.attr('data-show', 'true');
         switcher.$optional_width.val(self.current.width);
         switcher.$optional_height.val(self.current.height);
       }
@@ -312,7 +315,7 @@
           var style = {};
           if (undefined != dimensions.width) {
             style.width = dimensions.width;
-            style.marginLeft = divideByTwo('-'+dimensions.width);
+            style.marginLeft = divideByTwo('-' + dimensions.width);
           }
           if (undefined != dimensions.height) {
             style.height = dimensions.height;

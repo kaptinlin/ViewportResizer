@@ -20,6 +20,16 @@ header {
   	-o-user-select: none;
   	user-select: none;  */ 
 }
+#logo {
+	border: 0;
+	font: 0/0 a;
+	text-shadow: none;
+	color: transparent;
+	background: url(../img/logo.png) right center no-repeat;
+	width: 185px;
+	height: 60px;
+	float: left;
+}
 html {
 	margin-top: 60px;
 	overflow: hidden;

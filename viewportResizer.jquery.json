@@ -17,8 +17,8 @@
   },
   "licenses": [
     {
-      "type": "GPL",
-      "url": "https://github.com/KaptinLin/ViewportResizer/blob/master/LICENSE-GPL"
+      "type": "CC BY-NC 3.0",
+      "url": "http://creativecommons.org/licenses/by-nc/3.0/"
     }
   ],
   "dependencies": {

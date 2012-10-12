@@ -1,14 +1,27 @@
-/*! ViewportResizer - v0.1.0 - 2012-10-11
+/*! ViewportResizer - v0.1.0 - 2012-10-12
 * https://github.com/KaptinLin/ViewportResizer
-* Copyright (c) 2012 KaptinLin; Licensed GPL */
+* Copyright (c) 2012 KaptinLin; Licensed CC BY-NC 3.0 */
 
 (function (window, document, $, undefined) {
   "use strict";
 
+  function isNumber(num) {
+    return (typeof num == 'string' || typeof num == 'number') && !isNaN(num - 0) && num !== '';
+  };
+
+  function divideByTwo(num) {
+    if (isNumber(num)) {
+      return num / 2;
+    }
+    if (typeof num == 'string' && num.charAt(num.length - 1) == '%') {
+      return num.substr(0, num.length - 1) / 2 + '%';
+    }
+  };
+
   // Constructor
   var self = $.ViewportResizer = function (options) {
     $.extend(self.settings, options);
-    var switcher, iframe, uri, resizable, axis, info;
+    var switcher, iframe, uri, resizable, axis, info, target;
 
     var scrollbarWidth = getScrollbarWidth();
     // Classes
@@ -17,18 +30,19 @@
         iframeClass = self.settings.classNamePrefix + '-iframe',
         resizableClass = self.settings.classNamePrefix + '-resizable',
         axisClass = self.settings.classNamePrefix + '-axis',
-        infoClass = self.settings.classNamePrefix + '-info';
+        infoClass = self.settings.classNamePrefix + '-info',
+        targetClass = self.settings.classNamePrefix + '-target';
 
     self.query = {};
 
     // Private Methods
-
 
     function init() {
       self.$viewport = $('<div />').addClass(viewportClass).appendTo(self.settings.container.viewport);
       self.current = {};
 
       //build doms
+      target.build();
       switcher.build();
       iframe.build();
       resizable.build();
@@ -36,6 +50,7 @@
       info.build();
 
       //bind events
+      target.bind();
       switcher.bind();
       iframe.bind();
       resizable.bind();
@@ -67,6 +82,12 @@
     };
 
     function getViewportDimensions(viewport) {
+      if (viewport == 'auto') {
+        return {
+          width: '100%',
+          height: '100%'
+        }
+      }
       return {
         width: self.settings.viewports[viewport].width + scrollbarWidth,
         height: self.settings.viewports[viewport].height
@@ -74,7 +95,6 @@
     }
 
     // thank to http://chris-spittles.co.uk/?p=531
-
 
     function getScrollbarWidth() {
       var $inner = jQuery('<div style="width: 100%; height:200px;">test</div>'),
@@ -134,17 +154,32 @@
         return query;
       }
     };
+    target = {
+      build: function () {
 
+      },
+      bind: function () {
+
+      }
+
+    };
     switcher = {
       build: function () {
         self.$switcher = $('<ul/>').addClass(switcherClass);
         var sizeMarkup = [];
         $.each(self.settings.viewports, function (slug, viewport) {
-          sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
+          if (slug == 'optional') {
+            sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'>" + "<a href='#'>" + viewport.description + "</a>" + "<div class='" + switcherClass + "-optional-detail'><ul>" + "<li><label for='optional_width'>Width:</label><input type='number' id='optional_width' min='" + self.settings.min.width + "' value='' /></li>" + "<li><label for='optional_height'>Height:</label><input type='number' id='optional_height' min='" + self.settings.min.height + "' value='' /></li>" + "</ul></div>" + "</li>";
+          } else {
+            sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
+          }
         });
-        self.$switcher.append(sizeMarkup).appendTo(self.settings.container.switcher);
 
-        self.$switcherItem = self.$switcher.find('li');
+        self.$switcher.append(sizeMarkup).appendTo(self.settings.container.switcher);
+        self.$optional = self.$switcher.children('[data-viewport="optional"]');
+
+        switcher.$optional_width = self.$optional.find('#optional_width');
+        switcher.$optional_height = self.$optional.find('#optional_height');
       },
       to: function (viewport) {
         self.current.viewport = viewport;
@@ -153,22 +188,52 @@
         self.current.width = dimensions.width;
         self.current.height = dimensions.height;
 
-        self.$switcherItem.filter('[data-current="true"]').attr('data-current', null);
-        self.$switcherItem.filter('[data-viewport="' + viewport + '"]').attr('data-current', 'true');
+        self.$switcher.children('[data-current="true"]').attr('data-current', null);
+        self.$switcher.children('[data-viewport="' + viewport + '"]').attr('data-current', 'true');
         self.$viewport.trigger('resize', self.current);
       },
       bind: function () {
-        self.$switcherItem.click(function () {
-          var viewport = $(this).data('viewport');
+        self.$switcher.delegate('a', 'click', function (e) {
+          var viewport = $(this).parent().data('viewport');
+          if (viewport === 'optional') {
+            switcher.showOptional();
+          }
           switcher.to(viewport);
+          e.preventDefault();
         });
+
+        switcher.$optional_width.on('change', function () {
+          if (isNumber(this.value)) {
+            if (this.value < self.settings.min.width) {
+              this.value = self.settings.min.width;
+            }
+            self.$viewport.trigger('resize', {
+              width: this.value
+            });
+          }
+        });
+        switcher.$optional_height.on('change', function () {
+          if (isNumber(this.value)) {
+            if (this.value < self.settings.min.height) {
+              this.value = self.settings.min.height;
+            }
+
+            self.$viewport.trigger('resize', {
+              height: this.value
+            });
+          }
+        });
+      },
+      showOptional: function () {
+        self.$optional.attr('data-show', 'true');
+        switcher.$optional_width.val(self.current.width);
+        switcher.$optional_height.val(self.current.height);
       }
     };
 
     iframe = {
       build: function () {
         self.$iframe = $('<iframe />').addClass(iframeClass).appendTo(self.$viewport);
-
       },
       bind: function () {
         self.$viewport.delegate(self.$iframe, 'resize', function (e, dimensions) {
@@ -203,7 +268,7 @@
           var style = {};
           if (undefined != dimensions.width) {
             //style.width = dimensions.width;
-            style.marginLeft = dimensions.width / 2;
+            style.marginLeft = divideByTwo(dimensions.width);
             self.$infoWidth.text(dimensions.width - scrollbarWidth);
           }
           if (undefined != dimensions.height) {
@@ -227,7 +292,7 @@
         self.$viewport.delegate(self.$axisX, 'resize', function (e, dimensions) {
           if (undefined != dimensions.width) {
             e.data.css({
-              marginLeft: dimensions.width / 2
+              marginLeft: divideByTwo(dimensions.width)
             });
           }
         });
@@ -254,7 +319,7 @@
           var style = {};
           if (undefined != dimensions.width) {
             style.width = dimensions.width;
-            style.marginLeft = -dimensions.width / 2;
+            style.marginLeft = divideByTwo('-' + dimensions.width);
           }
           if (undefined != dimensions.height) {
             style.height = dimensions.height;
@@ -268,7 +333,7 @@
           self.$viewport.attr('data-resizing', 'onx');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            width: Math.max(self.settings.resize.minWidth, dd.width + dd.deltaX * 2)
+            width: Math.max(self.settings.min.width, dd.width + dd.deltaX * 2)
           });
         }).drag("dragend", function (e, dd) {
           self.$viewport.attr('data-resizing', null);
@@ -280,7 +345,7 @@
           self.$viewport.attr('data-resizing', 'ony');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            height: Math.max(self.settings.resize.minHeight, dd.height + dd.deltaY)
+            height: Math.max(self.settings.min.height, dd.height + dd.deltaY)
           });
         }).drag("dragend", function (e, dd) {
           self.$viewport.attr('data-resizing', null);
@@ -293,8 +358,8 @@
           self.$viewport.attr('data-resizing', 'onxy');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            width: Math.max(self.settings.resize.minWidth, dd.width + dd.deltaX * 2),
-            height: Math.max(self.settings.resize.minHeight, dd.height + dd.deltaY)
+            width: Math.max(self.settings.min.width, dd.width + dd.deltaX * 2),
+            height: Math.max(self.settings.min.height, dd.height + dd.deltaY)
           });
         }).drag("dragend", function (e, dd) {
           self.$viewport.attr('data-resizing', null);
@@ -342,9 +407,9 @@
         description: 'Desktop'
       }
     },
-    resize: {
-      minWidth: 240,
-      minHeight: 320
+    min: {
+      width: 240,
+      height: 320
     }
   };
 
