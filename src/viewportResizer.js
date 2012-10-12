@@ -152,10 +152,21 @@
     };
     target = {
       build: function () {
-
+        self.$target = $('<div/>').addClass(targetClass);
+        target.input = $('<input type="text"/>').addClass(targetClass+'-input').val(self.settings.targetPlaceholder).appendTo(self.$target);
+        
+        self.$target.appendTo(self.settings.container.target);
       },
       bind: function () {
-
+        target.input.on('focus',function(){
+          if(this.value == self.settings.targetPlaceholder){
+            this.value = '';
+          }
+        }).on('blur',function(){
+          if(this.value == ''){
+            this.value = self.settings.targetPlaceholder;
+          }
+        });
       }
 
     };
@@ -371,6 +382,7 @@
     classNamePrefix: 'resizer',
     container: {
       switcher: 'header',
+      target: 'header',
       viewport: 'article'
     },
     viewports: {
@@ -406,7 +418,9 @@
     min: {
       width: 240,
       height: 320
-    }
+    },
+    targetPlaceholder: 'Type your url here'
+    
   };
 
   self.addViewport = function (slug, options) {
