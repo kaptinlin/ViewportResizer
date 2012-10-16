@@ -21,6 +21,19 @@ header {
   	-o-user-select: none;
   	user-select: none;  */ 
 }
+header {
+  *zoom: 1;
+}
+
+header:before,
+header:after {
+  display: table;
+  line-height: 0;
+  content: "";
+}
+header:after {
+  clear: both;
+}
 #logo {
 	border: 0;
 	font: 0/0 a;
@@ -134,8 +147,9 @@ article {
 }
 /* switcher */
 ul.resizer-switcher {
-	margin:0;
-	padding:0;
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
 }
 ul.resizer-switcher li {
 	margin:0;
@@ -176,6 +190,8 @@ ul.resizer-switcher li {
 	color: #666666;
 	text-indent: 5px;
 	padding-right: 35px;
+	font-size: 16px;
+	line-height: 30px;
 	
 }
 .resizer-target-input:hover{
@@ -271,22 +287,28 @@ ul.resizer-switcher li {
 	width: 40px;
 	margin-right: 5px;
 	display:inline-block;
+	zoom: 1;
+    *display: inline; 
 }
 /* switcher */
 ul.resizer-switcher {
 	float: right;
 }
 .resizer-switcher > li {
-	display: inline-block;
-	list-style: none;
+	
 	position: relative;
+	display: inline;
+	float: left;
 }
 .resizer-switcher > li a {
+	display: block;
+	
+	text-decoration: none;
 	background-repeat: no-repeat;
 	background-position: center bottom;
 	height: 56px;
 	text-indent: 9999px;
-	display: inline-block;
+	
 	cursor: pointer;
 	outline: 0;
 }

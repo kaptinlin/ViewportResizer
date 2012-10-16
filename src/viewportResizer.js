@@ -2,17 +2,36 @@
   "use strict";
 
   function isNumber(num) {
-    return (typeof num == 'string' || typeof num == 'number') && !isNaN(num - 0) && num !== '';
-  };
+    return (typeof num === 'string' || typeof num === 'number') && !isNaN(num - 0) && num !== '';
+  }
 
   function divideByTwo(num) {
     if (isNumber(num)) {
       return num / 2;
     }
-    if (typeof num == 'string' && num.charAt(num.length - 1) == '%') {
+    if (typeof num === 'string' && num.charAt(num.length - 1) === '%') {
       return num.substr(0, num.length - 1) / 2 + '%';
     }
-  };
+  }
+
+/*
+   * thank to http://chris-spittles.co.uk/?p=531
+   */
+
+  function getScrollbarWidth() {
+    var $inner = jQuery('<div style="width: 100%; height:200px;">test</div>'),
+        $outer = jQuery('<div style="width:200px; height:150px; position: absolute; top: 0; left: 0; visibility: hidden; overflow:hidden;"></div>').append($inner),
+        inner = $inner[0],
+        outer = $outer[0];
+
+    jQuery('body').append(outer);
+    var width1 = inner.offsetWidth;
+    $outer.css('overflow', 'scroll');
+    var width2 = outer.clientWidth;
+    $outer.remove();
+
+    return (width1 - width2);
+  }
 
   // Constructor
   var self = $.ViewportResizer = function (options) {
@@ -60,35 +79,16 @@
     }
 
     function getViewportDimensions(viewport) {
-      if (viewport == 'auto') {
+      if (viewport === 'auto') {
         return {
           width: '100%',
           height: '100%'
-        }
+        };
       }
       return {
         width: self.settings.viewports[viewport].width,
         height: self.settings.viewports[viewport].height
       };
-    }
-
-/*
-     * thank to http://chris-spittles.co.uk/?p=531
-     */
-
-    function getScrollbarWidth() {
-      var $inner = jQuery('<div style="width: 100%; height:200px;">test</div>'),
-          $outer = jQuery('<div style="width:200px; height:150px; position: absolute; top: 0; left: 0; visibility: hidden; overflow:hidden;"></div>').append($inner),
-          inner = $inner[0],
-          outer = $outer[0];
-
-      jQuery('body').append(outer);
-      var width1 = inner.offsetWidth;
-      $outer.css('overflow', 'scroll');
-      var width2 = outer.clientWidth;
-      $outer.remove();
-
-      return (width1 - width2);
     }
 
     uri = {
@@ -108,10 +108,10 @@
       },
       go: function (query) {
         if (typeof query.viewport !== "undefined") {
-          if (query.viewport == 'optional') {
+          if (query.viewport === 'optional') {
             var dimensions = {
-              width: query.width ? parseInt(query.width) : self.settings.min.width,
-              height: query.height ? parseInt(query.height) : self.settings.min.height
+              width: query.width ? parseInt(query.width, 10) : self.settings.min.width,
+              height: query.height ? parseInt(query.height, 10) : self.settings.min.height
             };
             switcher.to('optional', dimensions);
             switcher.optional.activeMatch(dimensions);
@@ -121,7 +121,7 @@
         }
 
         if (typeof query.target !== "undefined") {
-          target.set(query.target)
+          target.set(query.target);
           iframe.load(query.target);
         } else if (typeof self.settings.target !== "undefined") {
           target.set(self.settings.target);
@@ -176,11 +176,11 @@
       },
       bind: function () {
         target.input.on('focus', function () {
-          if (this.value == self.settings.targetPlaceholder) {
+          if (this.value === self.settings.targetPlaceholder) {
             this.value = '';
           }
         }).on('blur', function () {
-          if (this.value == '') {
+          if (this.value === '') {
             this.value = self.settings.targetPlaceholder;
           }
         });
@@ -221,7 +221,7 @@
         activeMatch: function (dimensions, callback) {
           var match = false;
           $(switcher.optional.$saved).children().each(function () {
-            if (parseInt($(this).data('width')) == dimensions.width && parseInt($(this).data('height')) == dimensions.height) {
+            if (parseInt($(this).data('width'), 10) === dimensions.width && parseInt($(this).data('height'), 10) === dimensions.height) {
               $(this).trigger('click');
               match = true;
             }
@@ -229,7 +229,7 @@
           return match;
         },
         addToSaved: function (dimensions) {
-          if (isNumber(dimensions.width) && isNumber(dimensions.height) && switcher.optional.activeMatch(dimensions) == false) {
+          if (isNumber(dimensions.width) && isNumber(dimensions.height) && switcher.optional.activeMatch(dimensions) === false) {
             $("<li><div><span>Width: </span><span>" + dimensions.width + "</span></div><div><span>Height: </span><span>" + dimensions.height + "</span></div><div><button>Delete</button></div></li>").data('width', dimensions.width).data('height', dimensions.height).appendTo(switcher.optional.$saved).trigger('click');
           }
         },
@@ -237,8 +237,8 @@
           $(element).attr('data-current', 'true');
           $(element).siblings('[data-current="true"]').attr('data-current', null);
 
-          var width = parseInt($(element).data('width')),
-              height = parseInt($(element).data('height'));
+          var width = parseInt($(element).data('width'), 10),
+              height = parseInt($(element).data('height'), 10);
 
           switcher.to('optional', {
             width: width,
@@ -311,7 +311,7 @@
       to: function (viewport, dimensions) {
         self.current.viewport = viewport;
 
-        if (viewport != 'optional') {
+        if (viewport !== 'optional') {
           switcher.optional.deactive();
           dimensions = getViewportDimensions(self.current.viewport);
         }
@@ -319,13 +319,13 @@
         self.current.width = dimensions.width;
         self.current.height = dimensions.height;
 
-        if (viewport == 'optional') {
+        if (viewport === 'optional') {
           uri.setQuery({
             viewport: viewport,
             width: dimensions.width,
             height: dimensions.height
           });
-        } else if (self.query.viewport != viewport) {
+        } else if (self.query.viewport !== viewport) {
           uri.setQuery({
             viewport: viewport,
             width: null,
@@ -352,10 +352,13 @@
 
     iframe = {
       build: function () {
-        self.$iframe = $('<iframe />').addClass(iframeClass).appendTo(self.$viewport);
+        self.$iframe = $('<iframe frameborder="no"/>').addClass(iframeClass).appendTo(self.$viewport);
       },
       bind: function () {
         self.$viewport.delegate(self.$iframe, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           var style = {};
           if (typeof dimensions.width !== "undefined") {
             if (self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
@@ -380,7 +383,7 @@
 
         self.$iframe.attr('src', src);
 
-        if (self.query.target != src) {
+        if (self.query.target !== src) {
           uri.setQuery({
             target: src
           });
@@ -396,6 +399,9 @@
       },
       bind: function () {
         self.$viewport.delegate(self.$info, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           var style = {};
           if (typeof dimensions.width !== "undefined") {
             style.marginLeft = divideByTwo(dimensions.width);
@@ -420,6 +426,9 @@
       },
       bind: function () {
         self.$viewport.delegate(self.$axisX, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           if (typeof dimensions.width !== "undefined") {
             var width = dimensions.width;
             if (!self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
@@ -431,6 +440,9 @@
           }
         });
         self.$viewport.delegate(self.$axisY, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           if (typeof dimensions.height !== "undefined") {
             e.data.css({
               top: dimensions.height
@@ -450,6 +462,9 @@
       },
       bind: function () {
         self.$viewport.delegate(self.$resizable, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           var style = {};
           if (typeof dimensions.width !== "undefined") {
             var width = dimensions.width;
@@ -471,7 +486,7 @@
           self.$viewport.attr('data-resizing', 'onx');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            width: Math.max(self.settings.min.width, dd.width + parseInt(dd.deltaX) * 2)
+            width: Math.max(self.settings.min.width, dd.width + parseInt(dd.deltaX, 10) * 2)
           });
         }).drag("dragend", function (e, dd) {
 
@@ -484,7 +499,7 @@
           self.$viewport.attr('data-resizing', 'ony');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            height: Math.max(self.settings.min.height, dd.height + parseInt(dd.deltaY))
+            height: Math.max(self.settings.min.height, dd.height + parseInt(dd.deltaY, 10))
           });
         }).drag("dragend", function (e, dd) {
           self.$viewport.attr('data-resizing', null);
@@ -497,8 +512,8 @@
           self.$viewport.attr('data-resizing', 'onxy');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            width: Math.max(self.settings.min.width, dd.width + parseInt(dd.deltaX) * 2),
-            height: Math.max(self.settings.min.height, dd.height + parseInt(dd.deltaY))
+            width: Math.max(self.settings.min.width, dd.width + parseInt(dd.deltaX, 10) * 2),
+            height: Math.max(self.settings.min.height, dd.height + parseInt(dd.deltaY, 10))
           });
         }).drag("dragend", function (e, dd) {
           self.$viewport.attr('data-resizing', null);
@@ -553,7 +568,7 @@
     },
     step: 5,
     targetPlaceholder: 'Type your url here',
-    scrollbarInWidth: false,
+    scrollbarInWidth: true,
     target: undefined
   };
 
@@ -566,7 +581,7 @@
 /*
  * http://stackoverflow.com/questions/931207/is-there-a-jquery-autogrow-plugin-for-text-fields
  */
-(function ($) {
+(function (document, $, undefined) {
 
   $.fn.autoGrowInput = function (o) {
 
@@ -625,4 +640,4 @@
 
   };
 
-})(jQuery);
+}(document, jQuery));

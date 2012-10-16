@@ -15,7 +15,7 @@ In your web page:
 <script src="dist/viewportResizer.min.js"></script>
 <script>
 jQuery(function($) {
-  $.viewportResizer(); // "awesome"
+  $.viewportResizer();
 });
 </script>
 ```
