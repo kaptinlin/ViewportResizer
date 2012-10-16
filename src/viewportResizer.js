@@ -53,9 +53,10 @@
       axis.bind();
       info.bind();
 
-      uri.init(self.settings.target);
-
+      //select auto
       self.$viewport.attr('data-current', 'auto');
+
+      uri.init();
     }
 
     function getViewportDimensions(viewport) {
@@ -106,7 +107,7 @@
         };
       },
       go: function (query) {
-        if (query.viewport !== undefined) {
+        if (typeof query.viewport !== "undefined") {
           if (query.viewport == 'optional') {
             var dimensions = {
               width: query.width ? parseInt(query.width) : self.settings.min.width,
@@ -114,17 +115,17 @@
             };
             switcher.to('optional', dimensions);
             switcher.optional.activeMatch(dimensions);
-          } else if (self.settings.viewports[query.viewport] !== undefined) {
+          } else if (typeof self.settings.viewports[query.viewport] !== "undefined") {
             switcher.to(query.viewport);
           }
         }
 
-        if (query.target !== undefined) {
+        if (typeof query.target !== "undefined") {
           target.set(query.target)
           iframe.load(query.target);
-        } else if (url !== undefined) {
-          target.set(url);
-          iframe.load(url);
+        } else if (typeof self.settings.target !== "undefined") {
+          target.set(self.settings.target);
+          iframe.load(self.settings.target);
         }
       },
       pushState: function (query) {
@@ -143,12 +144,12 @@
         }
       },
       getQuery: function (url) {
-        if (url === undefined) {
+        if (typeof url === "undefined") {
           url = window.location.href;
         }
         var query = {};
         var query_string = url.replace(/#[^\s]+/, '').split('?')[1];
-        if (query_string !== undefined) {
+        if (typeof query_string !== "undefined") {
           query_string = query_string.split('&');
 
           $.each(query_string, function (i, arg_string) {
@@ -188,7 +189,7 @@
           target.go(this.value);
         });
         target.input.autoGrowInput({
-          comfortZone: 60,
+          comfortZone: 15,
           maxWidth: 2000
         });
       },
@@ -356,7 +357,7 @@
       bind: function () {
         self.$viewport.delegate(self.$iframe, 'resize', function (e, dimensions) {
           var style = {};
-          if (undefined != dimensions.width) {
+          if (typeof dimensions.width !== "undefined") {
             if (self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
               style.width = dimensions.width;
             } else {
@@ -365,7 +366,7 @@
 
             self.current.width = dimensions.width;
           }
-          if (undefined != dimensions.height) {
+          if (typeof dimensions.height !== "undefined") {
             style.height = dimensions.height;
             self.current.height = dimensions.height;
           }
@@ -396,12 +397,11 @@
       bind: function () {
         self.$viewport.delegate(self.$info, 'resize', function (e, dimensions) {
           var style = {};
-          if (undefined != dimensions.width) {
-            //style.width = dimensions.width;
+          if (typeof dimensions.width !== "undefined") {
             style.marginLeft = divideByTwo(dimensions.width);
             self.$infoWidth.text(dimensions.width);
           }
-          if (undefined != dimensions.height) {
+          if (typeof dimensions.height !== "undefined") {
             style.top = dimensions.height;
             self.$infoHeight.text(dimensions.height);
           }
@@ -420,7 +420,7 @@
       },
       bind: function () {
         self.$viewport.delegate(self.$axisX, 'resize', function (e, dimensions) {
-          if (undefined != dimensions.width) {
+          if (typeof dimensions.width !== "undefined") {
             var width = dimensions.width;
             if (!self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
               width = dimensions.width + scrollbarWidth;
@@ -431,7 +431,7 @@
           }
         });
         self.$viewport.delegate(self.$axisY, 'resize', function (e, dimensions) {
-          if (undefined != dimensions.height) {
+          if (typeof dimensions.height !== "undefined") {
             e.data.css({
               top: dimensions.height
             });
@@ -451,7 +451,7 @@
       bind: function () {
         self.$viewport.delegate(self.$resizable, 'resize', function (e, dimensions) {
           var style = {};
-          if (undefined != dimensions.width) {
+          if (typeof dimensions.width !== "undefined") {
             var width = dimensions.width;
             if (!self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
               width = dimensions.width + scrollbarWidth;
@@ -459,7 +459,7 @@
             style.width = width;
             style.marginLeft = divideByTwo('-' + width);
           }
-          if (undefined != dimensions.height) {
+          if (typeof dimensions.height !== "undefined") {
             style.height = dimensions.height;
           }
           e.data.css(style);
@@ -471,7 +471,7 @@
           self.$viewport.attr('data-resizing', 'onx');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            width: Math.max(self.settings.min.width, dd.width + dd.deltaX * 2)
+            width: Math.max(self.settings.min.width, dd.width + parseInt(dd.deltaX) * 2)
           });
         }).drag("dragend", function (e, dd) {
 
@@ -484,7 +484,7 @@
           self.$viewport.attr('data-resizing', 'ony');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            height: Math.max(self.settings.min.height, dd.height + dd.deltaY)
+            height: Math.max(self.settings.min.height, dd.height + parseInt(dd.deltaY))
           });
         }).drag("dragend", function (e, dd) {
           self.$viewport.attr('data-resizing', null);
@@ -497,8 +497,8 @@
           self.$viewport.attr('data-resizing', 'onxy');
         }).drag(function (e, dd) {
           self.$viewport.trigger('resize', {
-            width: Math.max(self.settings.min.width, dd.width + dd.deltaX * 2),
-            height: Math.max(self.settings.min.height, dd.height + dd.deltaY)
+            width: Math.max(self.settings.min.width, dd.width + parseInt(dd.deltaX) * 2),
+            height: Math.max(self.settings.min.height, dd.height + parseInt(dd.deltaY))
           });
         }).drag("dragend", function (e, dd) {
           self.$viewport.attr('data-resizing', null);
@@ -551,8 +551,10 @@
       width: 240,
       height: 320
     },
+    step: 5,
     targetPlaceholder: 'Type your url here',
-    scrollbarInWidth: false
+    scrollbarInWidth: false,
+    target: undefined
   };
 
   self.addViewport = function (slug, options) {

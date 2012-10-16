@@ -2,7 +2,7 @@
   "name": "viewportResizer",
   "title": "ViewportResizer",
   "description": "ViewportResizer is jQuery plugin used to quickly change the dimensions of a webpage to test responsive design.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/KaptinLin/ViewportResizer",
   "author": {
     "name": "KaptinLin",

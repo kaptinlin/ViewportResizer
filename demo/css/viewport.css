@@ -90,6 +90,7 @@ article {
 	left: 50%;
 	position: absolute;
 	z-index: -1;
+	width: 150px;
 }
 /* resizable */
 .resizer-resizable {
@@ -174,6 +175,7 @@ ul.resizer-switcher li {
 	box-sizing: border-box;
 	color: #666666;
 	text-indent: 5px;
+	padding-right: 35px;
 	
 }
 .resizer-target-input:hover{
