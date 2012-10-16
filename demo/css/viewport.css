@@ -454,6 +454,7 @@ ul.resizer-switcher {
 	background-image: -o-linear-gradient(top, #e1e6e7, #eaf2f4);
 	background-image: -ms-linear-gradient(top, #e1e6e7, #eaf2f4);
 	background-image: linear-gradient(to bottom, #e1e6e7, #eaf2f4);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#e1e6e7', endColorstr='#eaf2f4');
 }
 .resizer-switcher-optional-container li:last-child {
 	border-bottom: none;
@@ -497,4 +498,6 @@ ul.resizer-switcher {
 
 [data-resizing*="on"] .resizer-resizable {
 	pointer-events: auto;
+
+	background:url(../img/blank.gif)\9; //ie6-ie9
 }
