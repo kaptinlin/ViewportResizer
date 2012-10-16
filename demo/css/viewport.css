@@ -11,6 +11,7 @@ header {
 	background-image: -o-linear-gradient(bottom, #070707, #151515);
 	background-image: -ms-linear-gradient(bottom, #070707, #151515);
 	background-image: linear-gradient(to top, #070707, #151515);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 	height:60px;
 	position:fixed;
 	z-index: 99999;
@@ -97,11 +98,13 @@ article {
 	height:100%;
 	width: 100%;
 	position: absolute;
+	pointer-events: none;
 }
 .resizer-resizable-x, .resizer-resizable-y, .resizer-resizable-xy {
 	position: absolute;
 	font-size: 0.1px;
 	display: block;
+	pointer-events: auto;
 }
 .resizer-resizable-x {
 	top: 50%;
@@ -160,6 +163,7 @@ ul.resizer-switcher li {
 .resizer-target {
 	float: left;
 	padding: 15px;
+	position: relative;
 }
 .resizer-target-input {
 	width: 300px;
@@ -170,6 +174,7 @@ ul.resizer-switcher li {
 	box-sizing: border-box;
 	color: #666666;
 	text-indent: 5px;
+	
 }
 .resizer-target-input:hover{
 	background-color: #313131;
@@ -185,6 +190,15 @@ ul.resizer-switcher li {
 .resizer-target-input, .resizer-target-input:focus {
 	border: none;
 	outline: none;
+}
+.resizer-target-enter {
+	background: url(../img/enter.png) center center no-repeat;
+	width: 21px;
+	height: 8px;
+	position: absolute;
+	right: 27px;
+    top: 27px;
+	display: block;
 }
 /* viewport */
 .resizer-viewport:not([data-resizing*="on"]) * {
@@ -317,49 +331,77 @@ ul.resizer-switcher {
 	background-image: url(../img/desktop_active.png);
 }
 /* swithcher optional */
-.resizer-switcher-optional-detail {
+.resizer-switcher-optional-container {
 	display: none;
 	position: absolute;
 	text-indent: 0 !important;
 	top: 70px;
 
-	left: -60px;
-	width: 112px;
-	padding: 10px;
+	left: -54px;
+	width: 132px;
+	font-size: 12px;
+
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 	background-color: #fff;
 	border: solid 2px rgba(0,0,0,.6);
-	background-image: -webkit-linear-gradient(bottom, #f4f4f4 16%, #fff);
-	background-image: -moz-linear-gradient(bottom, #f4f4f4 16%, #fff);
-	background-image: -o-linear-gradient(bottom, #f4f4f4 16%, #fff);
-	background-image: -ms-linear-gradient(bottom, #f4f4f4 16%, #fff);
-	background-image: linear-gradient(to top, #f4f4f4 16%, #fff);
+	background: #eeeeee;
+	
 }
-[data-current="true"][data-show="true"] .resizer-switcher-optional-detail {
+.resizer-switcher-optional-container:after {
+	border-bottom: 7px solid #FFFFFF;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    content: "";
+    display: block;
+    height: 0;
+    left: 63px;
+    position: absolute;
+    top: -7px;
+    width: 0;
+}
+.resizer-switcher-optional-container:before {
+	border-bottom: 8px solid rgba(0, 0, 0, 0.6);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    content: "";
+    display: block;
+    height: 0;
+    left: 62px;
+    position: absolute;
+    top: -10px;
+    width: 0;
+}
+.resizer-switcher [data-viewport="optional"] a:before{
+	content: "";
+	display: block;
+    height: 180px;
+    left: -86px;
+    position: absolute;
+    top: 56px;
+    width: 200px;
+}
+[data-show="true"] .resizer-switcher-optional-container {
 	display: block;
 }
-.resizer-switcher-optional-detail ul {
-	margin: 0;
-	padding: 0;
-	text-decoration: none;
-	list-style: none;
+.resizer-switcher-optional-add {
+	padding: 10px;
 }
-.resizer-switcher-optional-detail li {
-	font-size: 12px;
+.resizer-switcher-optional-add div {
+	
 	
 	text-indent: 0px;
-	margin-bottom: 2px !important;
+	margin-bottom: 2px;
 }
-.resizer-switcher-optional-detail label {
+.resizer-switcher-optional-add label {
 	color: #bbb;
 	text-align: right;
 	width: 45px;
 	display: inline-block;
 	margin-right: 5px;
 }
-.resizer-switcher-optional-detail input {
+.resizer-switcher-optional-add input {
 	color: #999;
 	display: inline;
 	width: 60px;
@@ -370,11 +412,52 @@ ul.resizer-switcher {
 	box-shadow: 0 0 0 2px rgba(255,255,255,.3), inset 0 2px 2px rgba(0,0,0,.03);
 	border: 1px solid rgba(0,0,0,.15);
 }
-.resizer-switcher-optional-detail input:focus,.resizer-switcher-optional-detail input:hover {
+.resizer-switcher-optional-add input:focus,.resizer-switcher-optional-add input:hover {
 	-webkit-box-shadow: 0 1px 8px rgba(111,188,243,.3);
 	-moz-box-shadow: 0 1px 8px rgba(111,188,243,.3);
 	box-shadow: 0 1px 8px rgba(111,188,243,.3);
 	border: solid 1px rgba(126,191,238,.6);
+}
+.resizer-switcher-optional-container ul {
+	margin: 0;
+	padding: 0;
+	text-decoration: none;
+	list-style: none;
+	background-color: #fff;
+	color: #b3b3b3;
+}
+.resizer-switcher-optional-container li {
+	border-top:1px solid #fff;
+	border-bottom: 1px solid #d4d4d4;
+	padding: 10px !important;
+	display: block;
+	-webkit-box-shadow: inset 0 1px #fff;
+	-moz-box-shadow: inset 0 1px #fff;
+	box-shadow: inset 0 1px #fff;
+	background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,.06), rgba(0,0,0,.05) 10%, rgba(0,0,0,.03) 20%, rgba(0,0,0,.02) 31%, rgba(0,0,0,.01) 48%, rgba(0,0,0,.01));
+	background-image: -moz-linear-gradient(bottom, rgba(0,0,0,.06), rgba(0,0,0,.05) 10%, rgba(0,0,0,.03) 20%, rgba(0,0,0,.02) 31%, rgba(0,0,0,.01) 48%, rgba(0,0,0,.01));
+	background-image: -o-linear-gradient(bottom, rgba(0,0,0,.06), rgba(0,0,0,.05) 10%, rgba(0,0,0,.03) 20%, rgba(0,0,0,.02) 31%, rgba(0,0,0,.01) 48%, rgba(0,0,0,.01));
+	background-image: -ms-linear-gradient(bottom, rgba(0,0,0,.06), rgba(0,0,0,.05) 10%, rgba(0,0,0,.03) 20%, rgba(0,0,0,.02) 31%, rgba(0,0,0,.01) 48%, rgba(0,0,0,.01));
+	background-image: linear-gradient(to top, rgba(0,0,0,.06), rgba(0,0,0,.05) 10%, rgba(0,0,0,.03) 20%, rgba(0,0,0,.02) 31%, rgba(0,0,0,.01) 48%, rgba(0,0,0,.01));
+}
+.resizer-switcher-optional-container li:hover {
+	background: #fff;
+}
+.resizer-switcher-optional-container li[data-current="true"] {
+	-webkit-box-shadow: inset 0 0 3px rgba(34,18,10,.1);
+	-moz-box-shadow: inset 0 0 3px rgba(34,18,10,.1);
+	box-shadow: inset 0 0 3px rgba(34,18,10,.1);
+	background-image: -webkit-linear-gradient(top, #e1e6e7, #eaf2f4);
+	background-image: -moz-linear-gradient(top, #e1e6e7, #eaf2f4);
+	background-image: -o-linear-gradient(top, #e1e6e7, #eaf2f4);
+	background-image: -ms-linear-gradient(top, #e1e6e7, #eaf2f4);
+	background-image: linear-gradient(to bottom, #e1e6e7, #eaf2f4);
+}
+.resizer-switcher-optional-container li:last-child {
+	border-bottom: none;
+}
+.resizer-switcher-optional-container li:first-child {
+	border-top: solid 2px rgba(0,0,0,.6);
 }
 /* resizable */
 .resizer-resizable-x {
@@ -408,4 +491,8 @@ ul.resizer-switcher {
 }
 [data-resizing="onxy"] .resizer-resizable-xy {
 	background: url(../img/resizable_xy_active.png) no-repeat;
+}
+
+[data-resizing*="on"] .resizer-resizable {
+	pointer-events: auto;
 }
