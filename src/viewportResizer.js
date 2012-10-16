@@ -352,10 +352,13 @@
 
     iframe = {
       build: function () {
-        self.$iframe = $('<iframe />').addClass(iframeClass).appendTo(self.$viewport);
+        self.$iframe = $('<iframe frameborder="no"/>').addClass(iframeClass).appendTo(self.$viewport);
       },
       bind: function () {
         self.$viewport.delegate(self.$iframe, 'resize', function (e, dimensions) {
+          if(typeof dimensions == "undefined"){
+            return;
+          }
           var style = {};
           if (typeof dimensions.width !== "undefined") {
             if (self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
@@ -396,6 +399,9 @@
       },
       bind: function () {
         self.$viewport.delegate(self.$info, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           var style = {};
           if (typeof dimensions.width !== "undefined") {
             style.marginLeft = divideByTwo(dimensions.width);
@@ -420,6 +426,9 @@
       },
       bind: function () {
         self.$viewport.delegate(self.$axisX, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           if (typeof dimensions.width !== "undefined") {
             var width = dimensions.width;
             if (!self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
@@ -431,6 +440,9 @@
           }
         });
         self.$viewport.delegate(self.$axisY, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           if (typeof dimensions.height !== "undefined") {
             e.data.css({
               top: dimensions.height
@@ -450,6 +462,9 @@
       },
       bind: function () {
         self.$viewport.delegate(self.$resizable, 'resize', function (e, dimensions) {
+          if (typeof dimensions === "undefined") {
+            return;
+          }
           var style = {};
           if (typeof dimensions.width !== "undefined") {
             var width = dimensions.width;
