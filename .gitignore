@@ -2,7 +2,7 @@
 grunt.js
 package.json
 node_modules/**/*
-psd/**/*
+psd/*
 
 # ignore swap files
 *.swp
