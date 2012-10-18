@@ -354,7 +354,7 @@
       },
       bind: function () {
         self.$viewport.delegate(self.$iframe, 'resize', function (e, dimensions) {
-          if(typeof dimensions == "undefined"){
+          if (typeof dimensions == "undefined") {
             return;
           }
           var style = {};
