@@ -1,4 +1,4 @@
-/*! ViewportResizer - v0.2.1 - 2012-10-25
+/*! ViewportResizer - v0.2.1 - 2012-10-31
 * https://github.com/KaptinLin/ViewportResizer
 * Copyright (c) 2012 KaptinLin; Licensed CC BY-NC 3.0 */
 
@@ -18,7 +18,7 @@
     }
   }
 
-/*
+  /**
    * thank to http://chris-spittles.co.uk/?p=531
    */
 
@@ -39,7 +39,7 @@
 
   // Constructor
   var self = $.ViewportResizer = function (options) {
-    $.extend(self.settings, options);
+    $.extend(true, self.settings, options);
     var switcher, iframe, uri, resizable, axis, info, target;
 
     var scrollbarWidth = getScrollbarWidth();
@@ -58,23 +58,51 @@
 
     function init() {
       self.$viewport = $('<div />').addClass(viewportClass).appendTo(self.settings.container.viewport);
+
+      self.$viewport.on('go', function (e, data) {
+        if (typeof data === "undefined") {
+          return;
+        }
+        if (typeof data.viewport !== "undefined") {
+          self.current.viewport = data.viewport;
+
+          if (data.viewport !== 'optional') {
+            data.dimensions = getViewportDimensions(data.viewport);
+          }
+
+          self.current.width = data.dimensions.width;
+          self.current.height = data.dimensions.height;
+        }
+
+        self.$viewport.trigger('resize', self.current);
+      });
+
       self.current = {};
 
-      //build doms
-      target.build();
-      switcher.build();
-      iframe.build();
-      resizable.build();
-      axis.build();
-      info.build();
+      if (self.settings.components.target) {
+        target.init();
+      }
+      if (self.settings.components.switcher) {
+        switcher.init();
+      }
 
-      //bind events
-      target.bind();
-      switcher.bind();
-      iframe.bind();
-      resizable.bind();
-      axis.bind();
-      info.bind();
+      if (self.settings.components.iframe) {
+        iframe.init();
+      }
+
+      if (self.settings.components.resizable) {
+        resizable.init();
+      }
+
+      if (self.settings.components.axis) {
+        axis.init();
+      }
+
+      if (self.settings.components.info) {
+        info.init();
+      }
+
+
 
       //select auto
       self.$viewport.attr('data-current', 'auto');
@@ -109,27 +137,52 @@
           window.onpopstateing = false;
           event.preventDefault();
         };
+
+        self.$viewport.on('go', function (e, data) {
+          if (typeof data === "undefined") {
+            return;
+          }
+          if (typeof data.viewport !== "undefined") {
+            if (data.viewport === 'optional' && data.dimensions !== 'undefined') {
+              uri.setQuery({
+                viewport: data.viewport,
+                width: data.dimensions.width,
+                height: data.dimensions.height
+              });
+            } else if (self.query.viewport !== data.viewport) {
+              uri.setQuery({
+                viewport: data.viewport,
+                width: null,
+                height: null
+              });
+            }
+          }
+        });
       },
       go: function (query) {
+        var data = {};
         if (typeof query.viewport !== "undefined") {
           if (query.viewport === 'optional') {
-            var dimensions = {
+            data.dimensions = {
               width: query.width ? parseInt(query.width, 10) : self.settings.min.width,
               height: query.height ? parseInt(query.height, 10) : self.settings.min.height
             };
-            switcher.to('optional', dimensions);
-            switcher.optional.activeMatch(dimensions);
+            data.viewport = 'optional';
+            // switcher.to('optional', dimensions);
+            // switcher.optional.activeMatch(dimensions);
           } else if (typeof self.settings.viewports[query.viewport] !== "undefined") {
-            switcher.to(query.viewport);
+            data.viewport = query.viewport;
           }
         }
 
         if (typeof query.target !== "undefined") {
-          target.set(query.target);
-          iframe.load(query.target);
+          data.url = query.target;
         } else if (typeof self.settings.target !== "undefined") {
-          target.set(self.settings.target);
-          iframe.load(self.settings.target);
+          data.url = self.settings.target;
+        }
+
+        if (data !== {}) {
+          self.$viewport.trigger('go', data);
         }
       },
       pushState: function (query) {
@@ -171,6 +224,10 @@
 
 
     target = {
+      init: function () {
+        target.build();
+        target.bind();
+      },
       build: function () {
         self.$target = $('<div/>').addClass(targetClass);
         target.input = $('<input type="text"/>').addClass(targetClass + '-input').val(self.settings.targetPlaceholder).appendTo(self.$target);
@@ -196,6 +253,15 @@
           comfortZone: 15,
           maxWidth: 2000
         });
+
+        self.$viewport.on('go', function (e, data) {
+          if (typeof data === "undefined") {
+            return;
+          }
+          if (typeof data.url !== "undefined") {
+            target.set(data.url);
+          }
+        });
       },
       set: function (url) {
         target.input.val(url);
@@ -207,6 +273,13 @@
     };
 
     switcher = {
+      init: function () {
+        switcher.build();
+        switcher.bind();
+
+        switcher.optional.build();
+        switcher.optional.bind();
+      },
       optional: {
         build: function () {
           switcher.$optional = self.$switcher.children('[data-viewport="optional"]');
@@ -253,8 +326,8 @@
           switcher.optional.$saved.find('[data-current="true"]').attr('data-current', null);
         },
         bind: function () {
-          self.$optional.hover(function (e) {
-            self.$optional.attr('data-show', 'true');
+          switcher.$optional.hover(function (e) {
+            switcher.$optional.attr('data-show', 'true');
             if (isNumber(self.current.width)) {
               switcher.optional.$width.val(self.current.width);
             }
@@ -262,7 +335,7 @@
               switcher.optional.$height.val(self.current.height);
             }
           }, function (e) {
-            self.$optional.attr('data-show', 'false');
+            switcher.$optional.attr('data-show', 'false');
           });
 
           switcher.optional.$width.on('change', function () {
@@ -298,6 +371,20 @@
           switcher.optional.$saved.delegate('li', 'click', function (e) {
             switcher.optional.active(this);
           });
+
+          self.$viewport.on('go', function (e, data) {
+            if (typeof data === "undefined") {
+              return;
+            }
+            if (typeof data.viewport !== "undefined") {
+              if (data.viewport === 'optional' && typeof data.dimensions !== 'undefined') {
+                switcher.to('optional', data.dimensions);
+                switcher.optional.activeMatch(data.dimensions);
+              } else {
+                switcher.to(data.viewport);
+              }
+            }
+          });
         }
       },
       build: function () {
@@ -308,37 +395,14 @@
         });
 
         self.$switcher.append(sizeMarkup).appendTo(self.settings.container.switcher);
-
-        self.$optional = self.$switcher.children('[data-viewport="optional"]');
-        switcher.optional.build();
       },
       to: function (viewport, dimensions) {
-        self.current.viewport = viewport;
-
         if (viewport !== 'optional') {
           switcher.optional.deactive();
-          dimensions = getViewportDimensions(self.current.viewport);
         }
 
-        self.current.width = dimensions.width;
-        self.current.height = dimensions.height;
-
-        if (viewport === 'optional') {
-          uri.setQuery({
-            viewport: viewport,
-            width: dimensions.width,
-            height: dimensions.height
-          });
-        } else if (self.query.viewport !== viewport) {
-          uri.setQuery({
-            viewport: viewport,
-            width: null,
-            height: null
-          });
-        }
         self.$switcher.children('[data-current="true"]').attr('data-current', null);
         self.$switcher.children('[data-viewport="' + viewport + '"]').attr('data-current', 'true');
-        self.$viewport.trigger('resize', self.current);
       },
       bind: function () {
         self.$switcher.delegate('a', 'click', function (e) {
@@ -346,15 +410,21 @@
           if (viewport === 'optional') {
 
           } else {
-            switcher.to(viewport);
+            self.$viewport.trigger('go', {
+              viewport: viewport
+            });
           }
+
           e.preventDefault();
         });
-        switcher.optional.bind();
       }
     };
 
     iframe = {
+      init: function () {
+        iframe.build();
+        iframe.bind();
+      },
       build: function () {
         self.$iframe = $('<iframe frameborder="no"/>').addClass(iframeClass).appendTo(self.$viewport);
       },
@@ -379,6 +449,15 @@
           }
           e.data.css(style);
         });
+
+        self.$viewport.on('go', function (e, data) {
+          if (typeof data === "undefined") {
+            return;
+          }
+          if (typeof data.url !== "undefined") {
+            iframe.load(data.url);
+          }
+        });
       },
       load: function (src) {
         if (-1 === src.search(/http(s){0,1}:\/\//)) {
@@ -396,6 +475,10 @@
     };
 
     info = {
+      init: function () {
+        info.build();
+        info.bind();
+      },
       build: function () {
         self.$info = $('<div>' + '<div class="' + infoClass + '-width"><span class="' + infoClass + '-lable">Width: </span><span class="' + infoClass + '-value"></span></div>' + '<div class="' + infoClass + '-height"><span class="' + infoClass + '-lable">Height: </span><span class="' + infoClass + '-value"></span></div>' + '</div>').addClass(infoClass).appendTo(self.$viewport);
         self.$infoWidth = self.$info.find('.' + infoClass + '-width .' + infoClass + '-value');
@@ -422,6 +505,10 @@
     };
 
     axis = {
+      init: function () {
+        axis.build();
+        axis.bind();
+      },
       build: function () {
         self.$axis = $('<div />').addClass(axisClass);
         self.$axisX = $('<div />').addClass(axisClass + '-x').prependTo(self.$axis);
@@ -457,6 +544,10 @@
     };
 
     resizable = {
+      init: function () {
+        resizable.build();
+        resizable.bind();
+      },
       build: function () {
         self.$resizable = $('<div />').addClass(resizableClass);
         self.$resizableX = $('<div />').addClass(resizableClass + '-x').prependTo(self.$resizable);
@@ -530,6 +621,14 @@
 
   // Default options for the plugin as a simple object
   self.settings = {
+    components: {
+      target: true,
+      switcher: true,
+      iframe: true,
+      resizable: true,
+      axis: true,
+      info: true
+    },
     classNamePrefix: 'resizer',
     container: {
       switcher: 'header',
@@ -551,7 +650,7 @@
         description: 'Mobile'
       },
       tablet: {
-        width: 460,
+        width: 480,
         height: 640,
         description: 'Tablet'
       },

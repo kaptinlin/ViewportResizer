@@ -35,7 +35,17 @@
         
         <script>
             jQuery(document).ready(function(){
-                $.ViewportResizer({target:'http://foundation.zurb.com'});      
+                $.ViewportResizer({
+                    target:'http://foundation.zurb.com',
+                    components:{
+                      target:true,
+                      switcher:true,
+                      iframe:true,
+                      resizable:true,
+                      axis:true,
+                      info:true
+                    }
+                });      
 
                 if($('html').is('.lt-ie9')){
                     $(window).resize(function (){
