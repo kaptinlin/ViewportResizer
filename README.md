@@ -24,7 +24,31 @@ jQuery(function($) {
 _(Coming soon)_
 
 ## Examples
-_(Coming soon)_
+
+```javascript
+$.ViewportResizer({
+    viewport: 'auto',
+    target:'http://foundation.zurb.com',
+    components:{
+      inputer:true,
+      switcher:true,
+      iframe:true,
+      resizable:true,
+      axis:true,
+      info:true,
+      history:false
+    }
+});
+$.ViewportResizer.go('http://baidu.com');
+$.ViewportResizer.use('mobile');
+$.ViewportResizer.change({
+    target: 'http://baidu.com',
+    viewport: 'mobile'
+});
+$.ViewportResizer.resize({width: 300, height: 400});
+$.ViewportResizer.resizeWidth(300);
+$.ViewportResizer.resizeHeight(400);
+```
 
 ## Release History
 _(Nothing yet)_

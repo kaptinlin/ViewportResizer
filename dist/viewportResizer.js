@@ -1,4 +1,4 @@
-/*! ViewportResizer - v0.2.1 - 2012-10-31
+/*! ViewportResizer - v0.3 - 2012-10-31
 * https://github.com/KaptinLin/ViewportResizer
 * Copyright (c) 2012 KaptinLin; Licensed CC BY-NC 3.0 */
 
@@ -7,6 +7,15 @@
 
   function isNumber(num) {
     return (typeof num === 'string' || typeof num === 'number') && !isNaN(num - 0) && num !== '';
+  }
+
+  function isEmpty(map) {
+    for (var key in map) {
+      if (map.hasOwnProperty(key)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   function divideByTwo(num) {
@@ -40,9 +49,10 @@
   // Constructor
   var self = $.ViewportResizer = function (options) {
     $.extend(true, self.settings, options);
-    var switcher, iframe, uri, resizable, axis, info, target;
+    var switcher, iframe, history, resizable, axis, info, inputer;
 
     var scrollbarWidth = getScrollbarWidth();
+
     // Classes
     var switcherClass = self.settings.classNamePrefix + '-switcher',
         viewportClass = self.settings.classNamePrefix + '-viewport',
@@ -50,16 +60,17 @@
         resizableClass = self.settings.classNamePrefix + '-resizable',
         axisClass = self.settings.classNamePrefix + '-axis',
         infoClass = self.settings.classNamePrefix + '-info',
-        targetClass = self.settings.classNamePrefix + '-target';
-
-    self.query = {};
+        inputerClass = self.settings.classNamePrefix + '-inputer';
 
     /* Private Methods */
 
     function init() {
+      self.current = {};
+      self.initialization = {};
+
       self.$viewport = $('<div />').addClass(viewportClass).appendTo(self.settings.container.viewport);
 
-      self.$viewport.on('go', function (e, data) {
+      self.$viewport.on('change', function (e, data) {
         if (typeof data === "undefined") {
           return;
         }
@@ -69,45 +80,65 @@
           if (data.viewport !== 'optional') {
             data.dimensions = getViewportDimensions(data.viewport);
           }
-
           self.current.width = data.dimensions.width;
           self.current.height = data.dimensions.height;
         }
+        if (typeof data.target !== "undefined") {
+          self.current.target = data.target;
+        }
 
-        self.$viewport.trigger('resize', self.current);
+        self.$viewport.trigger('resize', {
+          width: self.current.width,
+          height: self.current.height
+        });
       });
 
-      self.current = {};
+      self.$viewport.on('init', function (e, data) {
+        if (typeof data === "undefined") {
+          return;
+        }
+        if (typeof data.viewport !== "undefined") {
+          self.initialization.viewport = data.viewport;
+        }
+        if (typeof data.target !== "undefined") {
+          self.initialization.target = data.target;
+        }
+        if (!isEmpty(data.dimensions)) {
+          self.initialization.dimensions = data.dimensions;
+        }
+      });
 
-      if (self.settings.components.target) {
-        target.init();
+      self.$viewport.trigger('init', {
+        target: self.settings.target,
+        viewport: self.settings.viewport,
+        dimensions: self.settings.dimensions
+      });
+
+      if (self.settings.components.inputer) {
+        inputer.init();
       }
       if (self.settings.components.switcher) {
         switcher.init();
       }
-
       if (self.settings.components.iframe) {
         iframe.init();
       }
-
       if (self.settings.components.resizable) {
         resizable.init();
       }
-
       if (self.settings.components.axis) {
         axis.init();
       }
-
       if (self.settings.components.info) {
         info.init();
       }
+      if (self.settings.components.history) {
+        history.init();
+      }
 
-
-
-      //select auto
-      self.$viewport.attr('data-current', 'auto');
-
-      uri.init();
+      if (!isEmpty(self.initialization)) {
+        self.$viewport.trigger('change', self.initialization);
+      }
     }
 
     function getViewportDimensions(viewport) {
@@ -123,67 +154,77 @@
       };
     }
 
-    uri = {
-      init: function (url) {
-        $.extend(self.query, uri.getQuery());
+    history = {
+      query: {},
+      init: function () {
+        $.extend(history.query, history.getQuery());
 
-        uri.go(self.query);
+        self.$viewport.on('init', function (e, data) {
+          if (typeof data === "undefined") {
+            return;
+          }
+          var dimensions = {};
+          if (typeof data.width !== "undefined") {
+            dimensions.width = parseInt(data.width, 10);
+          }
+          if (typeof data.height !== "undefined") {
+            dimensions.height = parseInt(data.height, 10);
+          }
+
+          self.initialization.dimensions = dimensions;
+        });
+
+        if (!isEmpty(history.query)) {
+          self.$viewport.trigger('init', history.query);
+        }
 
         window.onpopstate = function (event) {
           window.onpopstateing = true;
+          var _data = {};
           if (event.state !== null) {
-            uri.go(event.state);
+            if (typeof event.state.viewport !== "undefined") {
+              _data.viewport = event.state.viewport;
+
+              if (_data.viewport === 'optional') {
+                _data.dimensions = {
+                  width: event.state.width ? parseInt(event.state.width, 10) : self.settings.min.width,
+                  height: event.state.height ? parseInt(event.state.height, 10) : self.settings.min.height
+                };
+              }
+            }
+
+            if (typeof event.state.target !== "undefined") {
+              _data.target = event.state.target;
+            }
+
+            self.$viewport.trigger('change', _data);
           }
           window.onpopstateing = false;
           event.preventDefault();
         };
 
-        self.$viewport.on('go', function (e, data) {
+        self.$viewport.on('change', function (e, data) {
           if (typeof data === "undefined") {
             return;
           }
+          var _query = {};
           if (typeof data.viewport !== "undefined") {
+            _query.viewport = data.viewport;
             if (data.viewport === 'optional' && data.dimensions !== 'undefined') {
-              uri.setQuery({
-                viewport: data.viewport,
-                width: data.dimensions.width,
-                height: data.dimensions.height
-              });
-            } else if (self.query.viewport !== data.viewport) {
-              uri.setQuery({
-                viewport: data.viewport,
-                width: null,
-                height: null
-              });
+              _query.width = data.dimensions.width;
+              _query.height = data.dimensions.height;
+            } else if (history.query.viewport !== data.viewport) {
+              _query.width = null;
+              _query.height = null;
             }
           }
-        });
-      },
-      go: function (query) {
-        var data = {};
-        if (typeof query.viewport !== "undefined") {
-          if (query.viewport === 'optional') {
-            data.dimensions = {
-              width: query.width ? parseInt(query.width, 10) : self.settings.min.width,
-              height: query.height ? parseInt(query.height, 10) : self.settings.min.height
-            };
-            data.viewport = 'optional';
-            // switcher.to('optional', dimensions);
-            // switcher.optional.activeMatch(dimensions);
-          } else if (typeof self.settings.viewports[query.viewport] !== "undefined") {
-            data.viewport = query.viewport;
+          if (typeof data.target !== "undefined") {
+            _query.target = data.target;
+          } else {
+            _query.target = self.current.target;
           }
-        }
-
-        if (typeof query.target !== "undefined") {
-          data.url = query.target;
-        } else if (typeof self.settings.target !== "undefined") {
-          data.url = self.settings.target;
-        }
-
-        if (data !== {}) {
-          self.$viewport.trigger('go', data);
-        }
+          history.setQuery(_query);
+        });
       },
       pushState: function (query) {
         if (window.onpopstateing === true) {
@@ -200,10 +241,9 @@
           window.history.pushState(query, "", query_string);
         }
       },
-      getQuery: function (url) {
-        if (typeof url === "undefined") {
-          url = window.location.href;
-        }
+      getQuery: function () {
+        var url = window.location.href;
+
         var query = {};
         var query_string = url.replace(/#[^\s]+/, '').split('?')[1];
         if (typeof query_string !== "undefined") {
@@ -217,58 +257,59 @@
         return query;
       },
       setQuery: function (query) {
-        query = $.extend(self.query, query);
-        uri.pushState(query);
+        query = $.extend(history.query, query);
+        history.pushState(query);
       }
     };
 
-
-    target = {
+    inputer = {
       init: function () {
-        target.build();
-        target.bind();
+        inputer.build();
+        inputer.bind();
       },
       build: function () {
-        self.$target = $('<div/>').addClass(targetClass);
-        target.input = $('<input type="text"/>').addClass(targetClass + '-input').val(self.settings.targetPlaceholder).appendTo(self.$target);
-        target.enter = $('<span/>').addClass(targetClass + '-enter').appendTo(self.$target);
+        self.$inputer = $('<div/>').addClass(inputerClass);
+        inputer.input = $('<input type="text"/>').addClass(inputerClass + '-input').val(self.settings.inputerPlaceholder).appendTo(self.$inputer);
+        inputer.enter = $('<span/>').addClass(inputerClass + '-enter').appendTo(self.$inputer);
 
-        self.$target.appendTo(self.settings.container.target);
+        self.$inputer.appendTo(self.settings.container.inputer);
       },
       bind: function () {
-        target.input.on('focus', function () {
-          if (this.value === self.settings.targetPlaceholder) {
+        inputer.input.on('focus', function () {
+          if (this.value === self.settings.inputerPlaceholder) {
             this.value = '';
           }
         }).on('blur', function () {
           if (this.value === '') {
-            this.value = self.settings.targetPlaceholder;
+            this.value = self.settings.inputerPlaceholder;
           }
         });
 
-        target.input.on('change', function () {
-          target.go(this.value);
+        inputer.input.on('change', function () {
+          inputer.go(this.value);
         });
-        target.input.autoGrowInput({
+        inputer.input.autoGrowInput({
           comfortZone: 15,
           maxWidth: 2000
         });
 
-        self.$viewport.on('go', function (e, data) {
+        self.$viewport.on('change', function (e, data) {
           if (typeof data === "undefined") {
             return;
           }
-          if (typeof data.url !== "undefined") {
-            target.set(data.url);
+          if (typeof data.target !== "undefined") {
+            inputer.set(data.target);
           }
         });
       },
-      set: function (url) {
-        target.input.val(url);
-        target.input.trigger('update');
+      set: function (target) {
+        inputer.input.val(target);
+        // inputer.input.trigger('update');
       },
-      go: function (url) {
-        iframe.load(url);
+      go: function (target) {
+        self.$viewport.trigger('change', {
+          target: target
+        });
       }
     };
 
@@ -277,114 +318,8 @@
         switcher.build();
         switcher.bind();
 
-        switcher.optional.build();
-        switcher.optional.bind();
-      },
-      optional: {
-        build: function () {
-          switcher.$optional = self.$switcher.children('[data-viewport="optional"]');
-
-          switcher.optional.$container = $('<div/>').addClass(switcherClass + '-optional-container');
-          switcher.optional.$custom = $("<div class='" + switcherClass + "-optional-add'>" + "<div><label for='optional_width'>Width:</label><input type='number' id='optional_width' min='" + self.settings.min.width + "' value='' /></div>" + "<div><label for='optional_height'>Height:</label><input type='number' id='optional_height' min='" + self.settings.min.height + "' value='' /></div>" + "<div><button id='optional_add'>Add</button>" + "</div>").appendTo(switcher.optional.$container);
-
-          switcher.optional.$width = switcher.optional.$custom.find('#optional_width');
-          switcher.optional.$height = switcher.optional.$custom.find('#optional_height');
-          switcher.optional.$add = switcher.optional.$custom.find('#optional_add');
-
-          switcher.optional.$saved = $('<ul/>').appendTo(switcher.optional.$container);
-
-          switcher.optional.$container.appendTo(switcher.$optional);
-        },
-        activeMatch: function (dimensions, callback) {
-          var match = false;
-          $(switcher.optional.$saved).children().each(function () {
-            if (parseInt($(this).data('width'), 10) === dimensions.width && parseInt($(this).data('height'), 10) === dimensions.height) {
-              $(this).trigger('click');
-              match = true;
-            }
-          });
-          return match;
-        },
-        addToSaved: function (dimensions) {
-          if (isNumber(dimensions.width) && isNumber(dimensions.height) && switcher.optional.activeMatch(dimensions) === false) {
-            $("<li><div><span>Width: </span><span>" + dimensions.width + "</span></div><div><span>Height: </span><span>" + dimensions.height + "</span></div><div><button>Delete</button></div></li>").data('width', dimensions.width).data('height', dimensions.height).appendTo(switcher.optional.$saved).trigger('click');
-          }
-        },
-        active: function (element) {
-          $(element).attr('data-current', 'true');
-          $(element).siblings('[data-current="true"]').attr('data-current', null);
-
-          var width = parseInt($(element).data('width'), 10),
-              height = parseInt($(element).data('height'), 10);
-
-          switcher.to('optional', {
-            width: width,
-            height: height
-          });
-        },
-        deactive: function () {
-          switcher.optional.$saved.find('[data-current="true"]').attr('data-current', null);
-        },
-        bind: function () {
-          switcher.$optional.hover(function (e) {
-            switcher.$optional.attr('data-show', 'true');
-            if (isNumber(self.current.width)) {
-              switcher.optional.$width.val(self.current.width);
-            }
-            if (isNumber(self.current.height)) {
-              switcher.optional.$height.val(self.current.height);
-            }
-          }, function (e) {
-            switcher.$optional.attr('data-show', 'false');
-          });
-
-          switcher.optional.$width.on('change', function () {
-            if (isNumber(this.value)) {
-              if (this.value < self.settings.min.width) {
-                this.value = self.settings.min.width;
-              }
-              self.$viewport.trigger('resize', {
-                width: this.value
-              });
-            }
-          });
-          switcher.optional.$height.on('change', function () {
-            if (isNumber(this.value)) {
-              if (this.value < self.settings.min.height) {
-                this.value = self.settings.min.height;
-              }
-
-              self.$viewport.trigger('resize', {
-                height: this.value
-              });
-            }
-          });
-          switcher.optional.$add.on('click', function () {
-            switcher.optional.addToSaved({
-              width: switcher.optional.$width.val(),
-              height: switcher.optional.$height.val()
-            });
-          });
-          switcher.optional.$saved.delegate('button', 'click', function (e) {
-            $(this).closest('li').remove();
-          });
-          switcher.optional.$saved.delegate('li', 'click', function (e) {
-            switcher.optional.active(this);
-          });
-
-          self.$viewport.on('go', function (e, data) {
-            if (typeof data === "undefined") {
-              return;
-            }
-            if (typeof data.viewport !== "undefined") {
-              if (data.viewport === 'optional' && typeof data.dimensions !== 'undefined') {
-                switcher.to('optional', data.dimensions);
-                switcher.optional.activeMatch(data.dimensions);
-              } else {
-                switcher.to(data.viewport);
-              }
-            }
-          });
+        if (typeof self.settings.viewports['optional'] !== 'undefined') {
+          switcher.optional.init();
         }
       },
       build: function () {
@@ -397,10 +332,6 @@
         self.$switcher.append(sizeMarkup).appendTo(self.settings.container.switcher);
       },
       to: function (viewport, dimensions) {
-        if (viewport !== 'optional') {
-          switcher.optional.deactive();
-        }
-
         self.$switcher.children('[data-current="true"]').attr('data-current', null);
         self.$switcher.children('[data-viewport="' + viewport + '"]').attr('data-current', 'true');
       },
@@ -410,12 +341,138 @@
           if (viewport === 'optional') {
 
           } else {
-            self.$viewport.trigger('go', {
+            self.$viewport.trigger('change', {
               viewport: viewport
             });
           }
 
           e.preventDefault();
+        });
+
+        self.$viewport.on('change', function (e, data) {
+          if (typeof data === "undefined") {
+            return;
+          }
+          if (typeof data.viewport !== "undefined") {
+            if (data.viewport === 'optional' && typeof data.dimensions !== 'undefined') {
+              switcher.to('optional', data.dimensions);
+              switcher.optional.activeMatch(data.dimensions);
+            } else {
+              switcher.to(data.viewport);
+            }
+          }
+        });
+      }
+    };
+
+    switcher.optional = {
+      init: function () {
+        switcher.optional.build();
+        switcher.optional.bind();
+      },
+      build: function () {
+        switcher.$optional = self.$switcher.children('[data-viewport="optional"]');
+
+        switcher.optional.$container = $('<div/>').addClass(switcherClass + '-optional-container');
+        switcher.optional.$custom = $("<div class='" + switcherClass + "-optional-add'>" + "<div><label for='optional_width'>Width:</label><input type='number' id='optional_width' min='" + self.settings.min.width + "' value='' /></div>" + "<div><label for='optional_height'>Height:</label><input type='number' id='optional_height' min='" + self.settings.min.height + "' value='' /></div>" + "<div><button id='optional_add'>Add</button>" + "</div>").appendTo(switcher.optional.$container);
+
+        switcher.optional.$width = switcher.optional.$custom.find('#optional_width');
+        switcher.optional.$height = switcher.optional.$custom.find('#optional_height');
+        switcher.optional.$add = switcher.optional.$custom.find('#optional_add');
+
+        switcher.optional.$saved = $('<ul/>').appendTo(switcher.optional.$container);
+
+        switcher.optional.$container.appendTo(switcher.$optional);
+      },
+      activeMatch: function (dimensions, callback) {
+        var match = false;
+        $(switcher.optional.$saved).children().each(function () {
+          if (parseInt($(this).data('width'), 10) === dimensions.width && parseInt($(this).data('height'), 10) === dimensions.height) {
+            $(this).attr('data-current', 'true');
+            $(this).siblings('[data-current="true"]').attr('data-current', null);
+            match = true;
+          }
+        });
+        return match;
+      },
+      addToSaved: function (dimensions) {
+        if (isNumber(dimensions.width) && isNumber(dimensions.height) && switcher.optional.activeMatch(dimensions) === false) {
+          $("<li><div><span>Width: </span><span>" + dimensions.width + "</span></div><div><span>Height: </span><span>" + dimensions.height + "</span></div><div><button>Delete</button></div></li>").data('width', dimensions.width).data('height', dimensions.height).appendTo(switcher.optional.$saved).trigger('click');
+        }
+      },
+      active: function (element) {
+        $(element).attr('data-current', 'true');
+        $(element).siblings('[data-current="true"]').attr('data-current', null);
+
+        self.$viewport.trigger('change', {
+          viewport: 'optional',
+          dimensions: {
+            width: parseInt($(element).data('width'), 10),
+            height: parseInt($(element).data('height'), 10)
+          }
+        });
+      },
+      deactive: function () {
+        switcher.optional.$saved.find('[data-current="true"]').attr('data-current', null);
+      },
+      bind: function () {
+        switcher.$optional.hover(function (e) {
+          switcher.$optional.attr('data-show', 'true');
+          if (isNumber(self.current.width)) {
+            switcher.optional.$width.val(self.current.width);
+          }
+          if (isNumber(self.current.height)) {
+            switcher.optional.$height.val(self.current.height);
+          }
+        }, function (e) {
+          switcher.$optional.attr('data-show', 'false');
+        });
+
+        switcher.optional.$width.on('change', function () {
+          if (isNumber(this.value)) {
+            if (this.value < self.settings.min.width) {
+              this.value = self.settings.min.width;
+            }
+            self.$viewport.trigger('resize', {
+              width: this.value
+            });
+          }
+        });
+        switcher.optional.$height.on('change', function () {
+          if (isNumber(this.value)) {
+            if (this.value < self.settings.min.height) {
+              this.value = self.settings.min.height;
+            }
+
+            self.$viewport.trigger('resize', {
+              height: this.value
+            });
+          }
+        });
+        switcher.optional.$add.on('click', function () {
+          switcher.optional.addToSaved({
+            width: switcher.optional.$width.val(),
+            height: switcher.optional.$height.val()
+          });
+        });
+        switcher.optional.$saved.delegate('button', 'click', function (e) {
+          $(this).closest('li').remove();
+        });
+        switcher.optional.$saved.delegate('li', 'click', function (e) {
+          if (!$(e.target).is('button')) {
+            switcher.optional.active(this);
+          }
+        });
+
+        self.$viewport.on('change', function (e, data) {
+          if (typeof data === "undefined") {
+            return;
+          }
+          if (typeof data.viewport !== "undefined") {
+            if (data.viewport !== 'optional') {
+              switcher.optional.deactive();
+            }
+          }
         });
       }
     };
@@ -450,12 +507,12 @@
           e.data.css(style);
         });
 
-        self.$viewport.on('go', function (e, data) {
+        self.$viewport.on('change', function (e, data) {
           if (typeof data === "undefined") {
             return;
           }
-          if (typeof data.url !== "undefined") {
-            iframe.load(data.url);
+          if (typeof data.target !== "undefined") {
+            iframe.load(data.target);
           }
         });
       },
@@ -465,12 +522,6 @@
         }
 
         self.$iframe.attr('src', src);
-
-        if (self.query.target !== src) {
-          uri.setQuery({
-            target: src
-          });
-        }
       }
     };
 
@@ -621,8 +672,12 @@
 
   // Default options for the plugin as a simple object
   self.settings = {
+    viewport: 'auto',
+    target: undefined,
+    dimensions: {},
     components: {
-      target: true,
+      history: true,
+      inputer: true,
       switcher: true,
       iframe: true,
       resizable: true,
@@ -632,7 +687,7 @@
     classNamePrefix: 'resizer',
     container: {
       switcher: 'header',
-      target: 'header',
+      inputer: 'header',
       viewport: 'article'
     },
     viewports: {
@@ -670,13 +725,38 @@
       height: 320
     },
     step: 5,
-    targetPlaceholder: 'Type your url here',
-    scrollbarInWidth: true,
-    target: undefined
+    inputerPlaceholder: 'Type your url here',
+    scrollbarInWidth: true
   };
 
   self.addViewport = function (slug, options) {
     self.viewports.slug = options;
+  };
+  self.go = function (target) {
+    self.$viewport.trigger('change', {
+      target: target
+    });
+  };
+  self.use = function (viewport) {
+    self.$viewport.trigger('change', {
+      viewport: viewport
+    });
+  };
+  self.change = function (data) {
+    self.$viewport.trigger('change', data);
+  };
+  self.resize = function (dimensions) {
+    self.$viewport.trigger('resize', dimensions);
+  };
+  self.resizeWidth = function (val) {
+    self.$viewport.trigger('resize', {
+      width: val
+    });
+  };
+  self.resizeHeight = function (val) {
+    self.$viewport.trigger('resize', {
+      height: val
+    });
   };
 }(window, document, jQuery));
 

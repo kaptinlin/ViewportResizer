@@ -175,12 +175,12 @@ ul.resizer-switcher li {
    ViewportResizer Styled
    ========================================================================== */
 /* target */
-.resizer-target {
+.resizer-inputer {
 	float: left;
 	padding: 15px;
 	position: relative;
 }
-.resizer-target-input {
+.resizer-inputer-input {
 	width: 300px;
 	height: 30px;
 	background-color: rgba(255,255,255,.1);
@@ -194,22 +194,22 @@ ul.resizer-switcher li {
 	line-height: 30px;
 	
 }
-.resizer-target-input:hover{
+.resizer-inputer-input:hover{
 	background-color: #313131;
 	color: #888888;
 }
-.resizer-target-input:focus {
+.resizer-inputer-input:focus {
 	background-color: #fff;
 	color: #666666;
 }
-.resizer-target-placeholder {
+.resizer-inputer-placeholder {
 	color: #666666;
 }
-.resizer-target-input, .resizer-target-input:focus {
+.resizer-inputer-input, .resizer-inputer-input:focus {
 	border: none;
 	outline: none;
 }
-.resizer-target-enter {
+.resizer-inputer-enter {
 	background: url(../img/enter.png) center center no-repeat;
 	width: 21px;
 	height: 8px;
@@ -398,13 +398,13 @@ ul.resizer-switcher {
     width: 0;
 }
 .resizer-switcher [data-viewport="optional"] a:before{
-	content: "";
-	display: block;
-    height: 180px;
-    left: -86px;
+    content: "";
+    display: block;
+    height: 14px;
+    left: -26px;
     position: absolute;
     top: 56px;
-    width: 200px;
+    width: 80px;
 }
 [data-show="true"] .resizer-switcher-optional-container {
 	display: block;
