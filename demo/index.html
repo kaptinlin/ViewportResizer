@@ -28,7 +28,7 @@
         <article>
              <!-- it will replace with viewportResizer Iframe -->
         </article>
-        <script src="../libs/jquery/jquery.js"></script>
+        <script src="../libs/jquery/jquery-1.9.0.min.js"></script>
         <script src="../libs/jquery.event.drag-2.2.js"></script>
         <script src="../src/viewportResizer.js"></script>
         
@@ -36,9 +36,9 @@
             jQuery(document).ready(function(){
                 $.ViewportResizer({
                     viewport: 'auto',
-                    target:'http://foundation.zurb.com',
+                    target:'http://twitter.github.com/bootstrap/',
                     components:{
-                      inputer:true,
+                      inputer:false,
                       switcher:true,
                       iframe:true,
                       resizable:true,
@@ -48,15 +48,15 @@
                     }
                 });
 
-                $.ViewportResizer.go('http://baidu.com');
-                $.ViewportResizer.use('mobile');
+                // $.ViewportResizer.go('http://baidu.com');
+                // $.ViewportResizer.use('mobile');
                 // $.ViewportResizer.change({
                 //     target: 'http://baidu.com',
                 //     viewport: 'mobile'
                 // });
                 //$.ViewportResizer.resize({width: 300, height: 400});
-                $.ViewportResizer.resizeWidth(300);
-                $.ViewportResizer.resizeHeight(400);
+                // $.ViewportResizer.resizeWidth(300);
+                // $.ViewportResizer.resizeHeight(400);
 
                 if($('html').is('.lt-ie9')){
                     $(window).resize(function (){
