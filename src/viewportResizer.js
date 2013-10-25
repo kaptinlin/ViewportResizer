@@ -314,7 +314,7 @@
                 switcher.build();
                 switcher.bind();
 
-                if (typeof self.settings.viewports['optional'] !== 'undefined') {
+                if (self.settings.viewports['optional'] !== false) {
                     switcher.optional.init();
                 }
             },
@@ -322,7 +322,9 @@
                 self.$switcher = $('<ul/>').addClass(switcherClass);
                 var sizeMarkup = [];
                 $.each(self.settings.viewports, function(slug, viewport) {
-                    sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
+                    if(viewport){
+                        sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
+                    }
                 });
 
                 self.$switcher.append(sizeMarkup).appendTo(self.settings.container.switcher);

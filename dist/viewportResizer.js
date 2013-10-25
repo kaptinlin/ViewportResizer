@@ -1,4 +1,4 @@
-/*! ViewportResizer - v0.3.0 - 2013-10-12
+/*! ViewportResizer - v0.3.0 - 2013-10-25
 * https://github.com/KaptinLin/ViewportResizer
 * Copyright (c) 2013 amazingSurge; Licensed GPL */
 (function(window, document, $, undefined) {
@@ -317,7 +317,7 @@
                 switcher.build();
                 switcher.bind();
 
-                if (typeof self.settings.viewports['optional'] !== 'undefined') {
+                if (self.settings.viewports['optional'] !== false) {
                     switcher.optional.init();
                 }
             },
@@ -325,7 +325,9 @@
                 self.$switcher = $('<ul/>').addClass(switcherClass);
                 var sizeMarkup = [];
                 $.each(self.settings.viewports, function(slug, viewport) {
-                    sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
+                    if(viewport){
+                        sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
+                    }
                 });
 
                 self.$switcher.append(sizeMarkup).appendTo(self.settings.container.switcher);
