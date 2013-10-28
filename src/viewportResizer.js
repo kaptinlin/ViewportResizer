@@ -735,7 +735,9 @@
         inputerPlaceholder: 'Type your url here',
         scrollbarInWidth: true
     };
-
+    self.getIframe = function() {
+        return self.$iframe;
+    };
     self.addViewport = function(slug, options) {
         self.viewports.slug = options;
     };
