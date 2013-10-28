@@ -1,4 +1,4 @@
-/*! ViewportResizer - v0.3.0 - 2013-10-25
+/*! ViewportResizer - v0.3.0 - 2013-10-28
 * https://github.com/KaptinLin/ViewportResizer
 * Copyright (c) 2013 amazingSurge; Licensed GPL */
 (function(window, document, $, undefined) {
@@ -24,6 +24,13 @@
         if (typeof num === 'string' && num.charAt(num.length - 1) === '%') {
             return num.substr(0, num.length - 1) / 2 + '%';
         }
+    }
+
+    function isPercent(num) {
+        if (typeof num === 'string' && num.charAt(num.length - 1) === '%') {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -325,7 +332,7 @@
                 self.$switcher = $('<ul/>').addClass(switcherClass);
                 var sizeMarkup = [];
                 $.each(self.settings.viewports, function(slug, viewport) {
-                    if(viewport){
+                    if (viewport) {
                         sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
                     }
                 });
@@ -615,7 +622,9 @@
                     var style = {};
                     if (typeof dimensions.width !== "undefined") {
                         var width = dimensions.width;
-                        if (!self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
+                        if (isPercent(width)) {
+
+                        } else if (!self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
                             width = dimensions.width + scrollbarWidth;
                         }
                         style.width = width;

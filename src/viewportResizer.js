@@ -23,6 +23,13 @@
         }
     }
 
+    function isPercent(num) {
+        if (typeof num === 'string' && num.charAt(num.length - 1) === '%') {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * thank to http://chris-spittles.co.uk/?p=531
      */
@@ -322,7 +329,7 @@
                 self.$switcher = $('<ul/>').addClass(switcherClass);
                 var sizeMarkup = [];
                 $.each(self.settings.viewports, function(slug, viewport) {
-                    if(viewport){
+                    if (viewport) {
                         sizeMarkup += "<li data-viewport='" + slug + "' class='" + switcherClass + '-' + slug + "'><a href='#'>" + viewport.description + "</a></li>";
                     }
                 });
@@ -612,7 +619,9 @@
                     var style = {};
                     if (typeof dimensions.width !== "undefined") {
                         var width = dimensions.width;
-                        if (!self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
+                        if (isPercent(width)) {
+
+                        } else if (!self.settings.scrollbarInWidth || !isNumber(dimensions.width)) {
                             width = dimensions.width + scrollbarWidth;
                         }
                         style.width = width;
